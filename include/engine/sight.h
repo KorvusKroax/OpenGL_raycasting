@@ -4,10 +4,10 @@
 #include "world.h"
 #include "viewpoint.h"
 
-#define PI 3.141592653589793238463
-
 namespace Sight
 {
+    const double PI = 3.141592653589793238463;
+
     void render(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
     {
         float fov_rad = fov / 180.0 * PI;
@@ -25,14 +25,10 @@ namespace Sight
 
             // clip behind
             if (start.y <= 0) {
-                float dx = end.x - start.x;
-                float dy = end.y - start.y;
-                start.x = end.x - end.y * (dx / dy);
+                start.x = end.x - end.y * ((end.x - start.x) / (end.y - start.y));
                 start.y = 0;
             } else if (end.y <= 0) {
-                float dx = end.x - start.x;
-                float dy = end.y - start.y;
-                end.x = start.x - start.y * (dx / dy);
+                end.x = start.x - start.y * ((end.x - start.x) / (end.y - start.y));
                 end.y = 0;
             }
 

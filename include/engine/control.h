@@ -46,22 +46,26 @@ namespace Control
 
     namespace Keys
     {
-        int xStep, yStep;
+        int xStep, yStep, rise;
 
         void init()
         {
             xStep = 0;
             yStep = 0;
+            rise = 0;
         }
 
         void update(OpenGL* openGL)
         {
             xStep = 0;
             yStep = 0;
+            rise = 0;
             if (glfwGetKey(openGL->window, GLFW_KEY_W) == GLFW_PRESS) yStep = +1;
             if (glfwGetKey(openGL->window, GLFW_KEY_D) == GLFW_PRESS) xStep = +1;
             if (glfwGetKey(openGL->window, GLFW_KEY_S) == GLFW_PRESS) yStep = -1;
             if (glfwGetKey(openGL->window, GLFW_KEY_A) == GLFW_PRESS) xStep = -1;
+            if (glfwGetKey(openGL->window, GLFW_KEY_Q) == GLFW_PRESS) rise = -1;
+            if (glfwGetKey(openGL->window, GLFW_KEY_E) == GLFW_PRESS) rise = +1;
         }
     }
 }

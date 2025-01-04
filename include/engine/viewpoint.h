@@ -14,12 +14,14 @@ struct Viewpoint
         this->heading = heading;
     }
 
-    void update(float x, float y, float rot)
+    void update(float x, float y, float h, float rot)
     {
         float dx = sin(heading);
         float dy = cos(heading);
         if (y != 0) this->pos = this->pos.add(dx * y, dy * y);
         if (x != 0) this->pos = this->pos.add(dy * x, -dx * x);
+
+        this->height += h;
 
         this->heading += rot;
     }
