@@ -9,7 +9,8 @@ namespace Sight
 {
     void render_wireframe(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
     {
-        float fov_rad = fov / 180.0 * Misc::PI;
+        float fov_rad = Misc::deg2rad(fov);
+
         float nearClip = (canvas->width >> 1) / tan(fov_rad * .5f);
 
         for (Wall wall : world->walls) {
@@ -71,7 +72,7 @@ namespace Sight
 
     void render_raycast(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
     {
-        float fov_rad = fov / 180.0 * Misc::PI;
+        float fov_rad = Misc::deg2rad(fov);
 
         float nearClip = (canvas->width >> 1) / tan(fov_rad * .5f);
 
@@ -95,14 +96,14 @@ namespace Sight
                 }
             }
 
-            float dist = sqrt(iDist) * cos(ray_dir_angle);
+            float slice_dist = sqrt(iDist) * cos(ray_dir_angle);
 
             if (wall_index != -1) {
                 float wall_top = 70;
                 float wall_bottom = 0;
 
-                float wall_slice_height_top = (wall_top - viewpoint->height) / dist * nearClip;
-                float wall_slice_height_bottom = (viewpoint->height - wall_bottom) / dist * nearClip;
+                float wall_slice_height_top = (wall_top - viewpoint->height) / slice_dist * nearClip;
+                float wall_slice_height_bottom = (viewpoint->height - wall_bottom) / slice_dist * nearClip;
 
                 float top_row = (canvas->height >> 1) + wall_slice_height_top;
                 float bottom_row = (canvas->height >> 1) - wall_slice_height_bottom;

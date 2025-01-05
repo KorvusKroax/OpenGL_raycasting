@@ -43,7 +43,8 @@ namespace Map
     {
         float viewDist = 100.0f;
 
-        float fov_rad = fov / 180.0 * Misc::PI;
+        float fov_rad = Misc::deg2rad(fov);
+
         float fov_left_x = sin(-fov_rad * .5f + viewpoint->heading) * viewDist * zoom;
         float fov_left_y = cos(-fov_rad * .5f + viewpoint->heading) * viewDist * zoom;
         float fov_right_x = sin(fov_rad * .5f + viewpoint->heading) * viewDist * zoom;
@@ -156,7 +157,8 @@ namespace Map
     {
         float viewDist = 100.0f;
 
-        float fov_rad = fov / 180.0 * Misc::PI;
+        float fov_rad = Misc::deg2rad(fov);
+
         float fov_left_x = sin(-fov_rad * .5f) * viewDist * zoom;
         float fov_left_y = cos(-fov_rad * .5f) * viewDist * zoom;
         float fov_right_x = sin(fov_rad * .5f) * viewDist * zoom;
