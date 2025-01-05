@@ -3,14 +3,13 @@
 #include <canvas/canvas.h>
 #include "world.h"
 #include "viewpoint.h"
+#include "misc.h"
 
 namespace Sight
 {
-    const double PI = 3.141592653589793238463;
-
-    void render(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
+    void render_wireframe(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
     {
-        float fov_rad = fov / 180.0 * PI;
+        float fov_rad = fov / 180.0 * Misc::PI;
         float nearClip = (canvas->width >> 1) / tan(fov_rad * .5f);
 
         for (Wall wall : world->walls) {
@@ -68,6 +67,54 @@ namespace Sight
             Line::draw(canvas, px3, py3, px4, py4, Color(0, 192, 192));
             Line::draw(canvas, px4, py4, px1, py1, Color(0, 192, 192));
         }
+    }
+
+    void render_raycast(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
+    {
+        float fov_rad = fov / 180.0 * Misc::PI;
+
+        float nearClip = (canvas->width >> 1) / tan(fov_rad * .5f);
+
+        float ray_dir_angle = -fov_rad * .5f;
+        float ray_dir_angle_step = fov_rad / canvas->width;
+        for (int col = 0; col < canvas->width; col++) {
+
+            int wall_index = -1;
+            float iDist = std::numeric_limits<float>::max();
+            for (int i = 0; i < World::wall_count; i++) {
+                Point start = (*world->walls[i].start).sub(viewpoint->pos);
+                Point end = (*world->walls[i].end).sub(viewpoint->pos);
+
+                float x, y, d;
+                if (Misc::rayIntersection(start.x, start.y, end.x, end.y, sin(viewpoint->heading + ray_dir_angle), cos(viewpoint->heading + ray_dir_angle),  &x, &y)) {
+                    d = x * x + y * y;
+                    if (d < iDist) {
+                        wall_index = i;
+                        iDist = d;
+                    }
+                }
+            }
+
+            float dist = sqrt(iDist) * cos(ray_dir_angle);
+
+            if (wall_index != -1) {
+                float wall_top = 70;
+                float wall_bottom = 0;
+
+                float wall_slice_height_top = (wall_top - viewpoint->height) / dist * nearClip;
+                float wall_slice_height_bottom = (viewpoint->height - wall_bottom) / dist * nearClip;
+
+                float top_row = (canvas->height >> 1) + wall_slice_height_top;
+                float bottom_row = (canvas->height >> 1) - wall_slice_height_bottom;
+
+                for (int row = bottom_row; row < top_row; row++) {
+                    canvas->setPixel(col, row, Color(0, 128, 128));
+                }
+            }
+
+            ray_dir_angle += ray_dir_angle_step;
+        }
+
     }
 }
 

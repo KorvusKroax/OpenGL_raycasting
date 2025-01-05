@@ -30,14 +30,15 @@ int main()
     {
         canvas.clearCanvas();
 
-        // Map::render(&canvas, &world, &viewpoint);
-        // Map::render_viewpoint(&canvas, &world, &viewpoint, 80);
+        Sight::render_raycast(&canvas, &world, &viewpoint, 80);
+        Sight::render_wireframe(&canvas, &world, &viewpoint, 80);
 
-        Map::render_transformed(&canvas, &world, &viewpoint);
-        Map::render_transformed_sight(&canvas, &world, &viewpoint);
-        Map::render_transformed_viewpoint(&canvas, &world, &viewpoint, 80);
+        Map::render(&canvas, &world, &viewpoint);
+        Map::render_viewpoint(&canvas, &world, &viewpoint, 80);
 
-        Sight::render(&canvas, &world, &viewpoint, 80);
+        // Map::render_transformed(&canvas, &world, &viewpoint);
+        // Map::render_transformed_sight(&canvas, &world, &viewpoint);
+        // Map::render_transformed_viewpoint(&canvas, &world, &viewpoint, 80);
 
         Control::Keys::update(&openGL);
         Control::Mouse::update(&openGL);

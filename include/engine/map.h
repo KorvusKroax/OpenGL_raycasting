@@ -3,12 +3,11 @@
 #include <canvas/canvas.h>
 #include "world.h"
 #include "viewpoint.h"
+#include "misc.h"
 
 
 namespace Map
 {
-    const double PI = 3.141592653589793238463;
-
     const float zoomStepping = 0.1f;
     float zoom = 1;
 
@@ -44,7 +43,7 @@ namespace Map
     {
         float viewDist = 100.0f;
 
-        float fov_rad = fov / 180.0 * PI;
+        float fov_rad = fov / 180.0 * Misc::PI;
         float fov_left_x = sin(-fov_rad * .5f + viewpoint->heading) * viewDist * zoom;
         float fov_left_y = cos(-fov_rad * .5f + viewpoint->heading) * viewDist * zoom;
         float fov_right_x = sin(fov_rad * .5f + viewpoint->heading) * viewDist * zoom;
@@ -60,6 +59,31 @@ namespace Map
         // viewpoint (screen center)
         Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + dir_x, (canvas->height >> 1) + dir_y, Color(255, 0, 0));
         Circle::draw_filled(canvas, (canvas->width >> 1), (canvas->height >> 1), 2, Color(255, 0, 0));
+
+        // wall intersections
+        int wall_index = -1;
+        float ix, iy, id = std::numeric_limits<float>::max();
+        for (int i = 0; i < World::wall_count; i++) {
+            Point start = (*world->walls[i].start).sub(viewpoint->pos);
+            Point end = (*world->walls[i].end).sub(viewpoint->pos);
+
+            float x, y, d;
+            if (Misc::rayIntersection(start.x, start.y, end.x, end.y, dir_x, dir_y,  &x, &y)) {
+                Circle::draw(canvas, (canvas->width >> 1) + x * zoom, (canvas->height >> 1) + y * zoom, 2, Color(0, 192, 0));
+                d = x * x + y * y;
+                if (d < id) {
+                    wall_index = i;
+                    ix = x;
+                    iy = y;
+                    id = d;
+                }
+            }
+        }
+
+        // closest intersection
+        if (wall_index != -1) {
+            Circle::draw_filled(canvas, (canvas->width >> 1) + ix * zoom, (canvas->height >> 1) + iy * zoom, 2, Color(0, 192, 0));
+        }
     }
 
 
@@ -132,7 +156,7 @@ namespace Map
     {
         float viewDist = 100.0f;
 
-        float fov_rad = fov / 180.0 * PI;
+        float fov_rad = fov / 180.0 * Misc::PI;
         float fov_left_x = sin(-fov_rad * .5f) * viewDist * zoom;
         float fov_left_y = cos(-fov_rad * .5f) * viewDist * zoom;
         float fov_right_x = sin(fov_rad * .5f) * viewDist * zoom;
@@ -145,6 +169,35 @@ namespace Map
         // viewpoint (screen center)
         Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1), (canvas->height >> 1) + viewDist * zoom, Color(128, 0, 0));
         Circle::draw_filled(canvas, (canvas->width >> 1), (canvas->height >> 1), 2, Color(255, 0, 0));
+
+        // wall intersections
+        int wall_index = -1;
+        float ix, iy, id = std::numeric_limits<float>::max();
+        for (int i = 0; i < World::wall_count; i++) {
+            Point start = (*world->walls[i].start)
+                .sub(viewpoint->pos)
+                .rotate(viewpoint->heading);
+            Point end = (*world->walls[i].end)
+                .sub(viewpoint->pos)
+                .rotate(viewpoint->heading);
+
+            float x, y, d;
+            if (Misc::rayIntersection(start.x, start.y, end.x, end.y, 0, 1,  &x, &y)) {
+                Circle::draw(canvas, (canvas->width >> 1) + x * zoom, (canvas->height >> 1) + y * zoom, 2, Color(0, 192, 0));
+                d = x * x + y * y;
+                if (d < id) {
+                    wall_index = i;
+                    ix = x;
+                    iy = y;
+                    id = d;
+                }
+            }
+        }
+
+        // closest intersection
+        if (wall_index != -1) {
+            Circle::draw_filled(canvas, (canvas->width >> 1) + ix * zoom, (canvas->height >> 1) + iy * zoom, 2, Color(0, 192, 0));
+        }
     }
 
 
