@@ -16,11 +16,13 @@ float moveSpeed = 50;
 int main()
 {
     Canvas canvas = Canvas(WIDTH, HEIGHT);
+
     OpenGL openGL = OpenGL(&canvas, PIXEL_SIZE, WINDOWED);
+    glfwSetWindowPos(openGL.window, 100, 50);
 
     World world;
 
-    Viewpoint viewpoint = Viewpoint(Point(0, 0), 25, 0);
+    Viewpoint viewpoint = Viewpoint(Point(0, 0), 50, 0);
     float moveSpeed = 50;
 
     Control::Mouse::init(&openGL, Map::zoom_callback, Control::Mouse::MOUSE_DISABLED);
@@ -30,8 +32,10 @@ int main()
     {
         canvas.clearCanvas();
 
+        Line::draw(&canvas, 0, canvas.height >> 1, canvas.width - 1, canvas.height >> 1, Color(255, 0, 0));
+
         Sight::render_raycast(&canvas, &world, &viewpoint, 80);
-        Sight::render_wireframe(&canvas, &world, &viewpoint, 80);
+        // Sight::render_wireframe(&canvas, &world, &viewpoint, 80);
 
         Map::render(&canvas, &world, &viewpoint);
         Map::render_viewpoint(&canvas, &world, &viewpoint, 80);

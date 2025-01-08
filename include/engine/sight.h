@@ -81,7 +81,7 @@ namespace Sight
         for (int col = 0; col < canvas->width; col++) {
 
             int wall_index = -1;
-            float iDist = std::numeric_limits<float>::max();
+            float ix, iy, iDist = std::numeric_limits<float>::max();
             for (int i = 0; i < World::wall_count; i++) {
                 Point start = (*world->walls[i].start).sub(viewpoint->pos);
                 Point end = (*world->walls[i].end).sub(viewpoint->pos);
@@ -91,25 +91,42 @@ namespace Sight
                     d = x * x + y * y;
                     if (d < iDist) {
                         wall_index = i;
+                        ix = x;
+                        iy = y;
                         iDist = d;
                     }
                 }
             }
 
-            float slice_dist = sqrt(iDist) * cos(ray_dir_angle);
-
             if (wall_index != -1) {
-                float wall_top = 70;
-                float wall_bottom = 0;
+                float slice_dist = sqrt(iDist) * cos(ray_dir_angle) + 1;
 
-                float wall_slice_height_top = (wall_top - viewpoint->height) / slice_dist * nearClip;
-                float wall_slice_height_bottom = (viewpoint->height - wall_bottom) / slice_dist * nearClip;
+                float wall_slice_height_top = (world->walls[wall_index].top - viewpoint->height) / slice_dist * nearClip;
+                float wall_slice_height_bottom = (viewpoint->height - world->walls[wall_index].bottom) / slice_dist * nearClip;
 
-                float top_row = (canvas->height >> 1) + wall_slice_height_top;
-                float bottom_row = (canvas->height >> 1) - wall_slice_height_bottom;
+                Point t_start = (*world->walls[wall_index].start).sub(viewpoint->pos);
+                float t_dx = ix - t_start.x;
+                float t_dy = iy - t_start.y;
+                float texture_slice_x = sqrt(t_dx * t_dx + t_dy * t_dy);
+                while (texture_slice_x >= world->textures[world->walls[wall_index].texture_id].width) {
+                    texture_slice_x -= world->textures[world->walls[wall_index].texture_id].width;
+                }
 
-                for (int row = bottom_row; row < top_row; row++) {
-                    canvas->setPixel(col, row, Color(0, 128, 128));
+                float texture_step_y = (float)(world->walls[wall_index].top - world->walls[wall_index].bottom) / (wall_slice_height_top + wall_slice_height_bottom);
+                float texture_slice_y = 0;
+                // float f = (int)wall_slice_height_bottom * texture_step_y;
+                // float texture_slice_y = 1.0f - abs(f - (int)f);
+
+                for (int row = -wall_slice_height_bottom; row < wall_slice_height_top; row++) {
+
+                    int color_index = (int)texture_slice_x + (int)texture_slice_y * world->textures[world->walls[wall_index].texture_id].width;
+                    Color color = world->textures[world->walls[wall_index].texture_id].pixels[color_index];
+                    canvas->setPixel(col, (canvas->height >> 1) + row, color);
+
+                    texture_slice_y += texture_step_y;
+                    if (texture_slice_y >= world->textures[world->walls[wall_index].texture_id].height) {
+                        texture_slice_y -= world->textures[world->walls[wall_index].texture_id].height;
+                    }
                 }
             }
 

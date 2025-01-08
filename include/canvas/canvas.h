@@ -7,8 +7,7 @@
 struct Canvas
 {
     public:
-        unsigned int width;
-        unsigned int height;
+        unsigned int width, height;
         int* pixels;
 
         Canvas() { }
