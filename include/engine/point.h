@@ -24,6 +24,7 @@ struct Point
 
     Point rotate(float angle)
     {
+        if (angle == 0) return Point(x, y);
         return Point(
             x * cos(angle) - y * sin(angle),
             y * cos(angle) + x * sin(angle)

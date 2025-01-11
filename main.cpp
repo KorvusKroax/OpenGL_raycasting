@@ -8,10 +8,12 @@
 
 const int WIDTH = 540; //640; //720; //800; //1024;
 const int HEIGHT = 300; //480; //405; //600; //768;
-const float PIXEL_SIZE = 3;
+const float PIXEL_SIZE = 2.5f;
 
 const double mouseSensivity = 1;
-float moveSpeed = 50;
+float moveSpeed = 100;
+
+float fov = Misc::deg2rad(80);
 
 int main()
 {
@@ -22,7 +24,7 @@ int main()
 
     World world;
 
-    Viewpoint viewpoint = Viewpoint(Point(0, 0), 50, 0);
+    Viewpoint viewpoint = Viewpoint(Point(0, 0), 50, 0, 0);
     float moveSpeed = 50;
 
     Control::Mouse::init(&openGL, Map::zoom_callback, Control::Mouse::MOUSE_DISABLED);
@@ -32,17 +34,14 @@ int main()
     {
         canvas.clearCanvas();
 
-        Line::draw(&canvas, 0, canvas.height >> 1, canvas.width - 1, canvas.height >> 1, Color(255, 0, 0));
+        // Line::draw(&canvas, 0, canvas.height >> 1, canvas.width - 1, canvas.height >> 1, Color(255, 0, 0));
 
-        Sight::render_raycast(&canvas, &world, &viewpoint, 80);
-        // Sight::render_wireframe(&canvas, &world, &viewpoint, 80);
+        Sight::render_raycast(&canvas, &world, &viewpoint, fov);
+        // Sight::render_wireframe(&canvas, &world, &viewpoint, fov);
 
-        Map::render(&canvas, &world, &viewpoint);
-        Map::render_viewpoint(&canvas, &world, &viewpoint, 80);
-
-        // Map::render_transformed(&canvas, &world, &viewpoint);
-        // Map::render_transformed_sight(&canvas, &world, &viewpoint);
-        // Map::render_transformed_viewpoint(&canvas, &world, &viewpoint, 80);
+        Map::render(&canvas, &world, &viewpoint, true);
+        Map::render_viewpoint(&canvas, &world, &viewpoint, fov, false);
+        Map::render_transformed_sight(&canvas, &world, &viewpoint);
 
         Control::Keys::update(&openGL);
         Control::Mouse::update(&openGL);
@@ -51,8 +50,11 @@ int main()
             Control::Keys::xStep * moveSpeed * openGL.deltaTime,
             Control::Keys::yStep * moveSpeed * openGL.deltaTime,
             Control::Keys::rise * moveSpeed * openGL.deltaTime,
-            Control::Mouse::xDelta * mouseSensivity * openGL.deltaTime
+            Control::Mouse::xDelta * mouseSensivity * openGL.deltaTime,
+            Control::Mouse::yDelta * mouseSensivity * 100 * openGL.deltaTime
         );
+
+        std::cout << Control::Mouse::yDelta * mouseSensivity * openGL.deltaTime << std::endl;
 
         if (glfwGetKey(openGL.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(openGL.window, true);

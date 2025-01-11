@@ -7,11 +7,10 @@
 
 namespace Sight
 {
+/*
     void render_wireframe(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
     {
-        float fov_rad = Misc::deg2rad(fov);
-
-        float nearClip = (canvas->width >> 1) / tan(fov_rad * .5f);
+        float nearClip = (canvas->width >> 1) / tan(fov * .5f);
 
         for (Wall wall : world->walls) {
             Point start = (*wall.start)
@@ -69,70 +68,99 @@ namespace Sight
             Line::draw(canvas, px4, py4, px1, py1, Color(0, 192, 192));
         }
     }
+*/
+
+
+    void render_raycast_textured_wall_slice(Canvas* canvas, int col, float sector_height, Wall* wall, Viewpoint* viewpoint, float wall_slice_height_bottom, float wall_slice_height_top, Point rayIntersection)
+    {
+        Point t_start = (*(*wall).start).sub(viewpoint->pos).rotate(viewpoint->heading);
+        float t_dx = rayIntersection.x - t_start.x;
+        float t_dy = rayIntersection.y - t_start.y;
+        float texture_slice_x = sqrt(t_dx * t_dx + t_dy * t_dy);
+        while (texture_slice_x >= (*(*wall).texture).width) {
+            texture_slice_x -= (*(*wall).texture).width;
+        }
+
+        float texture_step_y =  sector_height / (wall_slice_height_top + wall_slice_height_bottom);
+        float texture_slice_y = 0;
+        // float f = (int)wall_slice_height_bottom * texture_step_y;
+        // float texture_slice_y = 1.0f - abs(f - (int)f);
+
+        for (int row = -wall_slice_height_bottom; row < wall_slice_height_top; row++) {
+
+            int color_index = (int)texture_slice_x + (int)texture_slice_y * (*(*wall).texture).width;
+            Color color = (*(*wall).texture).pixels[color_index];
+            canvas->setPixel(col, (canvas->height >> 1) + viewpoint->pitch + row, color);
+
+            texture_slice_y += texture_step_y;
+            if (texture_slice_y >= (*(*wall).texture).height) {
+                texture_slice_y -= (*(*wall).texture).height;
+            }
+        }
+    }
+
+    void render_raycast_column(Canvas* canvas, int col, World* world, Sector* sector, Viewpoint* viewpoint, float ray_dir_angle, float nearClip)
+    {
+        int wall_index = -1;
+        float ix, iy, iDist = std::numeric_limits<float>::max();
+
+        for (int i = 0; i < (*sector).wall_count; i++) {
+
+            Point start = (*(*(*sector).walls[i]).start).sub(viewpoint->pos).rotate(viewpoint->heading);
+            Point end = (*(*(*sector).walls[i]).end).sub(viewpoint->pos).rotate(viewpoint->heading);
+
+            if (atan2(start.x, start.y) > atan2(end.x, end.y)) continue;
+
+            float x, y, d;
+            if (Misc::rayIntersection(start.x, start.y, end.x, end.y, sin(ray_dir_angle), cos(ray_dir_angle),  &x, &y)) {
+                d = x * x + y * y;
+                if (d < iDist) {
+                    wall_index = i;
+                    ix = x;
+                    iy = y;
+                    iDist = d;
+                }
+            }
+        }
+
+        if (wall_index != -1) {
+
+            if ((*(*sector).walls[wall_index]).portal_to != -1) {
+                render_raycast_column(canvas, col, world, &world->sectors[(*(*sector).walls[wall_index]).portal_to], viewpoint, ray_dir_angle, nearClip);
+                return;
+            }
+
+            float slice_dist = sqrt(iDist) * cos(ray_dir_angle) + 1;
+
+            float sector_height = ((*sector).top - (*sector).bottom);
+
+            float wall_slice_height_top = ((*sector).top - viewpoint->height) / slice_dist * nearClip;
+            float wall_slice_height_bottom = (viewpoint->height - (*sector).bottom) / slice_dist * nearClip;
+
+            render_raycast_textured_wall_slice(canvas, col, sector_height, (*sector).walls[wall_index], viewpoint, wall_slice_height_bottom, wall_slice_height_top, Point(ix, iy));
+        }
+    }
 
     void render_raycast(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
     {
-        float fov_rad = Misc::deg2rad(fov);
+        float nearClip = (canvas->width >> 1) / tan(fov * .5f);
 
-        float nearClip = (canvas->width >> 1) / tan(fov_rad * .5f);
-
-        float ray_dir_angle = -fov_rad * .5f;
-        float ray_dir_angle_step = fov_rad / canvas->width;
-        for (int col = 0; col < canvas->width; col++) {
-
-            int wall_index = -1;
-            float ix, iy, iDist = std::numeric_limits<float>::max();
-            for (int i = 0; i < World::wall_count; i++) {
-                Point start = (*world->walls[i].start).sub(viewpoint->pos);
-                Point end = (*world->walls[i].end).sub(viewpoint->pos);
-
-                float x, y, d;
-                if (Misc::rayIntersection(start.x, start.y, end.x, end.y, sin(viewpoint->heading + ray_dir_angle), cos(viewpoint->heading + ray_dir_angle),  &x, &y)) {
-                    d = x * x + y * y;
-                    if (d < iDist) {
-                        wall_index = i;
-                        ix = x;
-                        iy = y;
-                        iDist = d;
-                    }
-                }
+        int curr_sector = -1;
+        for (int i = 0; i < world->sector_count; i++) {
+            if (world->sectors[i].pointInSector(viewpoint->pos.x, viewpoint->pos.y)) {
+                curr_sector = i;
+                break;
             }
-
-            if (wall_index != -1) {
-                float slice_dist = sqrt(iDist) * cos(ray_dir_angle) + 1;
-
-                float wall_slice_height_top = (world->walls[wall_index].top - viewpoint->height) / slice_dist * nearClip;
-                float wall_slice_height_bottom = (viewpoint->height - world->walls[wall_index].bottom) / slice_dist * nearClip;
-
-                Point t_start = (*world->walls[wall_index].start).sub(viewpoint->pos);
-                float t_dx = ix - t_start.x;
-                float t_dy = iy - t_start.y;
-                float texture_slice_x = sqrt(t_dx * t_dx + t_dy * t_dy);
-                while (texture_slice_x >= world->textures[world->walls[wall_index].texture_id].width) {
-                    texture_slice_x -= world->textures[world->walls[wall_index].texture_id].width;
-                }
-
-                float texture_step_y = (float)(world->walls[wall_index].top - world->walls[wall_index].bottom) / (wall_slice_height_top + wall_slice_height_bottom);
-                float texture_slice_y = 0;
-                // float f = (int)wall_slice_height_bottom * texture_step_y;
-                // float texture_slice_y = 1.0f - abs(f - (int)f);
-
-                for (int row = -wall_slice_height_bottom; row < wall_slice_height_top; row++) {
-
-                    int color_index = (int)texture_slice_x + (int)texture_slice_y * world->textures[world->walls[wall_index].texture_id].width;
-                    Color color = world->textures[world->walls[wall_index].texture_id].pixels[color_index];
-                    canvas->setPixel(col, (canvas->height >> 1) + row, color);
-
-                    texture_slice_y += texture_step_y;
-                    if (texture_slice_y >= world->textures[world->walls[wall_index].texture_id].height) {
-                        texture_slice_y -= world->textures[world->walls[wall_index].texture_id].height;
-                    }
-                }
-            }
-
-            ray_dir_angle += ray_dir_angle_step;
         }
 
+        if (curr_sector == -1) return;
+
+        float ray_dir_angle = -fov * .5f;
+        float ray_dir_angle_step = fov / canvas->width;
+        for (int col = 0; col < canvas->width; col++) {
+            render_raycast_column(canvas, col, world, &world->sectors[curr_sector], viewpoint, ray_dir_angle, nearClip);
+            ray_dir_angle += ray_dir_angle_step;
+        }
     }
 }
 

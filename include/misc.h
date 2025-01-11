@@ -105,4 +105,31 @@ namespace Misc
         *iy = line_y1 + line_dy * t;
         return true;
     }
+
+    bool pointInPolygon(int polygon_point_count, float* polygon_x, float* polygon_y, float x, float y)
+    {
+        double minX = polygon_x[0];
+        double maxX = polygon_x[0];
+        double minY = polygon_y[0];
+        double maxY = polygon_y[0];
+        for (int i = 1 ; i < polygon_point_count; i++) {
+            if (minX > polygon_x[i]) minX = polygon_x[i];
+            if (maxX < polygon_x[i]) maxX = polygon_x[i];
+            if (minY > polygon_y[i]) minY = polygon_y[i];
+            if (maxY < polygon_y[i]) maxY = polygon_y[i];
+        }
+        if (x < minX || x > maxX || y < minY || y > maxY) return false;
+
+        // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
+        bool result = false;
+        for (int i = 0, j = polygon_point_count - 1; i < polygon_point_count; j = i++) {
+            if ( ((polygon_y[i] > y) != (polygon_y[j] > y)) &&
+                 (x < (polygon_x[j] - polygon_x[i]) * (y - polygon_y[i]) / (polygon_y[j] - polygon_y[i]) + polygon_x[i])
+            ) {
+                result = !result;
+            }
+        }
+
+        return result;
+    }
 }
