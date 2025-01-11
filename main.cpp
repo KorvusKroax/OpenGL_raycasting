@@ -54,8 +54,6 @@ int main()
             Control::Mouse::yDelta * mouseSensivity * 100 * openGL.deltaTime
         );
 
-        std::cout << Control::Mouse::yDelta * mouseSensivity * openGL.deltaTime << std::endl;
-
         if (glfwGetKey(openGL.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(openGL.window, true);
         }

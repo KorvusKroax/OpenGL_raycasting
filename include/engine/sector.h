@@ -8,18 +8,18 @@ struct Sector
     int wall_count;
     Wall** walls;
     float bottom, top;
-    Color floor_color, ceil_color;
+    Color floor_color, ceiling_color;
 
     Sector() { }
 
-    Sector(int wall_count, Wall** walls, float bottom, float top, Color floor_color, Color ceil_color)
+    Sector(int wall_count, Wall** walls, float bottom, float top, Color floor_color, Color ceiling_color)
     {
         this->wall_count = wall_count;
         this->walls = walls;
         this->bottom = bottom;
         this->top = top;
         this->floor_color = floor_color;
-        this->ceil_color = ceil_color;
+        this->ceiling_color = ceiling_color;
     }
 
     bool pointInSector(float x, float y)
