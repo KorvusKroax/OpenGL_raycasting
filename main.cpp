@@ -51,7 +51,7 @@ int main()
             Control::Keys::yStep * moveSpeed * openGL.deltaTime,
             Control::Keys::rise * moveSpeed * openGL.deltaTime,
             Control::Mouse::xDelta * mouseSensivity * openGL.deltaTime,
-            Control::Mouse::yDelta * mouseSensivity * 100 * openGL.deltaTime
+            Control::Mouse::yDelta * mouseSensivity * openGL.deltaTime
         );
 
         if (glfwGetKey(openGL.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {

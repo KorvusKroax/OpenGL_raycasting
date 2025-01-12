@@ -10,7 +10,7 @@ namespace Sight
 /*
     void render_wireframe(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
     {
-        float nearClip = (canvas->width >> 1) / tan(fov * .5f);
+        float near_clip = (canvas->width >> 1) / tan(fov * .5f);
 
         for (Wall wall : world->walls) {
             Point start = (*wall.start)
@@ -49,17 +49,17 @@ namespace Sight
             float z4 = start.y + 1;
 
             // calculate vertices' screen coords
-            float px1 = (x1 / z1) * nearClip + (canvas->width >> 1);
-            float py1 = (y1 / z1) * nearClip + (canvas->height >> 1);
+            float px1 = (x1 / z1) * near_clip + (canvas->width >> 1);
+            float py1 = (y1 / z1) * near_clip + (canvas->height >> 1);
 
-            float px2 = (x2 / z2) * nearClip + (canvas->width >> 1);
-            float py2 = (y2 / z2) * nearClip + (canvas->height >> 1);
+            float px2 = (x2 / z2) * near_clip + (canvas->width >> 1);
+            float py2 = (y2 / z2) * near_clip + (canvas->height >> 1);
 
-            float px3 = (x3 / z3) * nearClip + (canvas->width >> 1);
-            float py3 = (y3 / z3) * nearClip + (canvas->height >> 1);
+            float px3 = (x3 / z3) * near_clip + (canvas->width >> 1);
+            float py3 = (y3 / z3) * near_clip + (canvas->height >> 1);
 
-            float px4 = (x4 / z4) * nearClip + (canvas->width >> 1);
-            float py4 = (y4 / z4) * nearClip + (canvas->height >> 1);
+            float px4 = (x4 / z4) * near_clip + (canvas->width >> 1);
+            float py4 = (y4 / z4) * near_clip + (canvas->height >> 1);
 
             // draw wall
             Line::draw(canvas, px1, py1, px2, py2, Color(0, 192, 192));
@@ -70,13 +70,6 @@ namespace Sight
     }
 */
 
-    void render_raycast_ceiling(Canvas* canvas, int col, Sector* sector, float slice_top, float wall_slice_top)
-    {
-        for (int row = wall_slice_top + 1; row < slice_top; row++) {
-            canvas->setPixel(col, row, sector->ceiling_color);
-        }
-    }
-
     void render_raycast_wall_slice(Canvas* canvas, int col, Wall* wall, float wall_slice_bottom, float wall_slice_top)
     {
         for (int row = wall_slice_bottom; row < wall_slice_top; row++) {
@@ -84,15 +77,12 @@ namespace Sight
         }
     }
 
-    void render_raycast_textured_wall_slice(Canvas* canvas, int col, float sector_height, Wall* wall, Viewpoint* viewpoint, float wall_slice_bottom, float wall_slice_top, Point rayIntersection)
+    void render_raycast_textured_wall_slice(Canvas* canvas, int col, Wall* wall, Viewpoint* viewpoint, float sector_height, float wall_slice_bottom, float wall_slice_top, Point rayIntersection)
     {
         Point t_start = (*(*wall).start).sub(viewpoint->pos).rotate(viewpoint->heading);
         float t_dx = rayIntersection.x - t_start.x;
         float t_dy = rayIntersection.y - t_start.y;
-        float texture_slice_x = sqrt(t_dx * t_dx + t_dy * t_dy);
-        while (texture_slice_x >= (*(*wall).texture).width) {
-            texture_slice_x -= (*(*wall).texture).width;
-        }
+        float texture_slice_x = fmod(sqrt(t_dx * t_dx + t_dy * t_dy), (*(*wall).texture).width);
 
         float texture_step_y =  sector_height / (wall_slice_top - wall_slice_bottom);
         float texture_slice_y = 0;
@@ -100,11 +90,8 @@ namespace Sight
         // float texture_slice_y = 1.0f - abs(f - (int)f);
 
         for (int row = wall_slice_bottom; row < wall_slice_top; row++) {
-
             int color_index = (int)texture_slice_x + (int)texture_slice_y * (*(*wall).texture).width;
-            Color color = (*(*wall).texture).pixels[color_index];
-
-            canvas->setPixel(col, row, color);
+            canvas->setPixel(col, row, (*(*wall).texture).pixels[color_index]);
 
             texture_slice_y += texture_step_y;
             if (texture_slice_y >= (*(*wall).texture).height) {
@@ -113,6 +100,8 @@ namespace Sight
         }
     }
 
+
+
     void render_raycast_floor(Canvas* canvas, int col, Sector* sector, float slice_bottom, float wall_slice_bottom)
     {
         for (int row = slice_bottom; row < wall_slice_bottom - 1; row++) {
@@ -120,13 +109,51 @@ namespace Sight
         }
     }
 
-    void render_raycast_column(Canvas* canvas, int col, World* world, Sector* sector, Viewpoint* viewpoint, float ray_dir_angle, float nearClip, float slice_bottom, float slice_top)
+    void render_raycast_textured_floor(Canvas* canvas, int col, Sector* sector, Viewpoint* viewpoint, float ray_dir_angle, float near_clip, float horizont_line, float slice_bottom, float wall_slice_bottom)
+    {
+        for (int row = slice_bottom; row < wall_slice_bottom - 1; row++) {
+
+            float t_dist = viewpoint->height / (row - horizont_line) * near_clip / cos(ray_dir_angle);
+
+            float t_pos_x = Misc::nmod(viewpoint->pos.x - t_dist * sin(viewpoint->heading + ray_dir_angle), (*(*sector).floor_texture).width);
+            float t_pos_y = Misc::nmod(viewpoint->pos.y - t_dist * cos(viewpoint->heading + ray_dir_angle), (*(*sector).floor_texture).height);
+
+            int color_index = (int)t_pos_x + (int)t_pos_y * (*(*sector).floor_texture).width;
+            canvas->setPixel(col, row, (*(*sector).floor_texture).pixels[color_index]);
+        }
+    }
+
+
+
+    void render_raycast_ceiling(Canvas* canvas, int col, Sector* sector, float slice_top, float wall_slice_top)
+    {
+        for (int row = wall_slice_top + 1; row < slice_top; row++) {
+            canvas->setPixel(col, row, sector->ceiling_color);
+        }
+    }
+
+    void render_raycast_textured_ceiling(Canvas* canvas, int col, Sector* sector, Viewpoint* viewpoint, float ray_dir_angle, float near_clip, float horizont_line, float slice_top, float wall_slice_top)
+    {
+        for (int row = wall_slice_top + 1; row < slice_top; row++) {
+
+            float t_dist = (((*sector).top - (*sector).bottom) - viewpoint->height) / (horizont_line - row) * near_clip / cos(ray_dir_angle);
+
+            float t_pos_x = Misc::nmod(viewpoint->pos.x - t_dist * sin(viewpoint->heading + ray_dir_angle), (*(*sector).ceiling_texture).width);
+            float t_pos_y = Misc::nmod(viewpoint->pos.y - t_dist * cos(viewpoint->heading + ray_dir_angle), (*(*sector).ceiling_texture).height);
+
+            int color_index = (int)t_pos_x + (int)t_pos_y * (*(*sector).ceiling_texture).width;
+            canvas->setPixel(col, row, (*(*sector).ceiling_texture).pixels[color_index]);
+        }
+    }
+
+
+
+    void render_raycast_column(Canvas* canvas, int col, World* world, Sector* sector, Viewpoint* viewpoint, float ray_dir_angle, float near_clip, float slice_bottom, float slice_top)
     {
         int wall_index = -1;
         float ix, iy, iDist = std::numeric_limits<float>::max();
 
         for (int i = 0; i < (*sector).wall_count; i++) {
-
             Point start = (*(*(*sector).walls[i]).start).sub(viewpoint->pos).rotate(viewpoint->heading);
             Point end = (*(*(*sector).walls[i]).end).sub(viewpoint->pos).rotate(viewpoint->heading);
 
@@ -146,27 +173,29 @@ namespace Sight
 
         if (wall_index != -1) {
             float slice_dist = sqrt(iDist) * cos(ray_dir_angle) + 1;
-            float sector_height = ((*sector).top - (*sector).bottom);
             float horizont_line = (canvas->height >> 1) + viewpoint->pitch;
 
-            float wall_slice_top = horizont_line + ((*sector).top - viewpoint->height) / slice_dist * nearClip;
-            float wall_slice_bottom = horizont_line - (viewpoint->height - (*sector).bottom) / slice_dist * nearClip;
+            float wall_slice_top = horizont_line + ((*sector).top - viewpoint->height) / slice_dist * near_clip;
+            float wall_slice_bottom = horizont_line - (viewpoint->height - (*sector).bottom) / slice_dist * near_clip;
 
             if ((*(*sector).walls[wall_index]).portal_to != -1) {
-                render_raycast_column(canvas, col, world, &world->sectors[(*(*sector).walls[wall_index]).portal_to], viewpoint, ray_dir_angle, nearClip, wall_slice_bottom, wall_slice_top);
+                render_raycast_column(canvas, col, world, &world->sectors[(*(*sector).walls[wall_index]).portal_to], viewpoint, ray_dir_angle, near_clip, wall_slice_bottom, wall_slice_top);
             } else {
                 // render_raycast_wall_slice(canvas, col, (*sector).walls[wall_index], wall_slice_bottom, wall_slice_top);
-                render_raycast_textured_wall_slice(canvas, col, sector_height, (*sector).walls[wall_index], viewpoint, wall_slice_bottom, wall_slice_top, Point(ix, iy));
+                render_raycast_textured_wall_slice(canvas, col, (*sector).walls[wall_index], viewpoint, (*sector).top - (*sector).bottom, wall_slice_bottom, wall_slice_top, Point(ix, iy));
             }
 
-            render_raycast_ceiling(canvas, col, sector, slice_top, wall_slice_top);
-            render_raycast_floor(canvas, col, sector, slice_bottom, wall_slice_bottom);
+            // render_raycast_floor(canvas, col, sector, slice_bottom, wall_slice_bottom);
+            render_raycast_textured_floor(canvas, col, sector, viewpoint, ray_dir_angle, near_clip, horizont_line, slice_bottom, wall_slice_bottom);
+
+            // render_raycast_ceiling(canvas, col, sector, slice_top, wall_slice_top);
+            render_raycast_textured_ceiling(canvas, col, sector, viewpoint, ray_dir_angle, near_clip, horizont_line, slice_top, wall_slice_top);
         }
     }
 
     void render_raycast(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov)
     {
-        float nearClip = (canvas->width >> 1) / tan(fov * .5f);
+        float near_clip = (canvas->width >> 1) / tan(fov * .5f);
 
         int curr_sector = -1;
         for (int i = 0; i < world->sector_count; i++) {
@@ -181,7 +210,7 @@ namespace Sight
         float ray_dir_angle = -fov * .5f;
         float ray_dir_angle_step = fov / canvas->width;
         for (int col = 0; col < canvas->width; col++) {
-            render_raycast_column(canvas, col, world, &world->sectors[curr_sector], viewpoint, ray_dir_angle, nearClip, 0, canvas->height);
+            render_raycast_column(canvas, col, world, &world->sectors[curr_sector], viewpoint, ray_dir_angle, near_clip, 0, canvas->height);
             ray_dir_angle += ray_dir_angle_step;
         }
     }

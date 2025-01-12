@@ -4,19 +4,21 @@ namespace Misc
 {
     const double PI = 3.141592653589793238463;
 
-    double rad2deg(double angle) { return angle / PI * 180.0; }
+    inline double rad2deg(double angle) { return angle / PI * 180.0; }
 
-    double deg2rad(double angle) { return angle / 180.0 * PI; }
+    inline double deg2rad(double angle) { return angle / 180.0 * PI; }
 
-    int cross(int x1, int y1, int x2, int y2, int px, int py)
+    inline double nmod(double value, double mod) { return std::fmod(std::fmod(value, mod) + mod, mod); }
+
+    inline float cross(float x1, float y1, float x2, float y2, float px, float py)
     {
         return (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);
-        // n > 0: p is left
-        // n = 0: p is on line
-        // n < 0: p is right
+        // result > 0: p is left
+        // result = 0: p is on line
+        // result < 0: p is right
     }
 
-    bool pointInTriangle(int x1, int y1, int x2, int y2, int x3, int y3, int x, int y)
+    inline bool pointInTriangle(float x1, float y1, float x2, float y2, float x3, float y3, float x, float y)
     {
         return
             cross(x1, y1, x2, y2, x, y) <= 0 &&

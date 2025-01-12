@@ -1,6 +1,7 @@
 #pragma once
 
 #include "point.h"
+#include "misc.h"
 
 struct Viewpoint
 {
@@ -25,6 +26,11 @@ struct Viewpoint
         this->height += h;
 
         this->heading += rot_x;
-        this->pitch += rot_y;
+        // if (this->heading < -Misc::PI) this->heading += Misc::PI;
+        // if (this->heading >= Misc::PI) this->heading -= Misc::PI;
+
+        this->pitch += rot_y * 200;
+        if (this->pitch < -200) this->pitch = -200;
+        if (this->pitch > 200) this->pitch = 200;
     }
 };
