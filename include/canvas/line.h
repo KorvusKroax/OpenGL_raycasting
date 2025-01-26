@@ -67,4 +67,60 @@ namespace Line
             }
         }
     }
+
+    bool clip_box(float* x1, float* y1, float* x2, float* y2, float border_top, float border_right, float border_bottom, float border_left)
+    {
+        bool isClipped = false;
+
+        if (*y1 > border_top && *y2 > border_top) return isClipped;
+        if (*x1 > border_right && *x2 > border_right) return isClipped;
+        if (*y1 < border_bottom && *y2 < border_bottom) return isClipped;
+        if (*x1 < border_left && *x2 < border_left) return isClipped;
+
+        // clip top
+        if (*y1 > border_top) {
+            *x1 = *x2 - (*y2 - border_top) * ((*x2 - *x1) / (*y2 - *y1));
+            *y1 = border_top;
+            isClipped = true;
+        } else if (*y2 > border_top) {
+            *x2 = *x1 - (*y1 - border_top) * ((*x2 - *x1) / (*y2 - *y1));
+            *y2 = border_top;
+            isClipped = true;
+        }
+
+        // clip right
+        if (*x1 > border_right) {
+            *y1 = *y2 - (*x2 - border_right) * ((*y2 - *y1) / (*x2 - *x1));
+            *x1 = border_right;
+            isClipped = true;
+        } else if (*x2 > border_right) {
+            *y2 = *y1 - (*x1 - border_right) * ((*y2 - *y1) / (*x2 - *x1));
+            *x2 = border_right;
+            isClipped = true;
+        }
+
+        // clip bottom
+        if (*y1 < border_bottom) {
+            *x1 = *x2 - (*y2 - border_bottom) * ((*x2 - *x1) / (*y2 - *y1));
+            *y1 = border_bottom;
+            isClipped = true;
+        } else if (*y2 < border_bottom) {
+            *x2 = *x1 - (*y1 - border_bottom) * ((*x2 - *x1) / (*y2 - *y1));
+            *y2 = border_bottom;
+            isClipped = true;
+        }
+
+        // clip left
+        if (*x1 < border_left) {
+            *y1 = *y2 - (*x2 - border_left) * ((*y2 - *y1) / (*x2 - *x1));
+            *x1 = border_left;
+            isClipped = true;
+        } else if (*x2 < border_left) {
+            *y2 = *y1 - (*x1 - border_left) * ((*y2 - *y1) / (*x2 - *x1));
+            *x2 = border_left;
+            isClipped = true;
+        }
+
+        return isClipped;
+    }
 }

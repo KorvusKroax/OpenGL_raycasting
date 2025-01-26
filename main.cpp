@@ -1,63 +1,57 @@
 #include <open_gl.h>
+#include <open_gl/mouse.h>
 #include <canvas/canvas.h>
-#include <engine/world.h>
-#include <engine/viewpoint.h>
+#include <scene/world.h>
+#include <engine/camera.h>
+#include <engine/view.h>
 #include <engine/map.h>
-#include <engine/sight.h>
-#include <engine/control.h>
 
 const int WIDTH = 540; //640; //720; //800; //1024;
 const int HEIGHT = 300; //480; //405; //600; //768;
 const float PIXEL_SIZE = 2.5f;
 
-const double mouseSensivity = 1;
+Canvas canvas = Canvas(WIDTH, HEIGHT);
+OpenGL openGL = OpenGL(&canvas, PIXEL_SIZE, WINDOWED);
+
+World world;
+
+Mouse mouse = Mouse(&openGL, 1, MOUSE_DISABLED);
+
+Camera camera = Camera(Point(0, 0), 50, 0, 0);
+float fov = Misc::deg2rad(80);
 float moveSpeed = 100;
 
-float fov = Misc::deg2rad(80);
+bool showMap = false;
+
+void keys_callback(GLFWwindow* window, int key, int scancode, int action, int mod)
+{
+    if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
+        showMap = !showMap;
+    }
+    if (key == GLFW_KEY_ESCAPE) {// && action == GLFW_PRESS) {
+        glfwSetWindowShouldClose(openGL.window, true);
+    }
+}
 
 int main()
 {
-    Canvas canvas = Canvas(WIDTH, HEIGHT);
-
-    OpenGL openGL = OpenGL(&canvas, PIXEL_SIZE, WINDOWED);
     glfwSetWindowPos(openGL.window, 100, 50);
-
-    World world;
-
-    Viewpoint viewpoint = Viewpoint(Point(0, 0), 50, 0, 0);
-    float moveSpeed = 50;
-
-    Control::Mouse::init(&openGL, Map::zoom_callback, Control::Mouse::MOUSE_DISABLED);
-    Control::Keys::init();
+    glfwSetKeyCallback(openGL.window, keys_callback);
 
     while (!glfwWindowShouldClose(openGL.window))
     {
         canvas.clearCanvas();
 
-        // Line::draw(&canvas, 0, canvas.height >> 1, canvas.width - 1, canvas.height >> 1, Color(255, 0, 0));
+        View::Raycast::render(&canvas, &world, &camera, fov);
 
-        Sight::render_raycast(&canvas, &world, &viewpoint, fov);
-        // Sight::render_wireframe(&canvas, &world, &viewpoint, fov);
-
-        Map::render(&canvas, &world, &viewpoint, true);
-        Map::render_viewpoint(&canvas, &world, &viewpoint, fov, false);
-        Map::render_transformed_sight(&canvas, &world, &viewpoint);
-
-        Control::Keys::update(&openGL);
-        Control::Mouse::update(&openGL);
-
-        viewpoint.update(
-            Control::Keys::xStep * moveSpeed * openGL.deltaTime,
-            Control::Keys::yStep * moveSpeed * openGL.deltaTime,
-            Control::Keys::rise * moveSpeed * openGL.deltaTime,
-            Control::Mouse::xDelta * mouseSensivity * openGL.deltaTime,
-            Control::Mouse::yDelta * mouseSensivity * openGL.deltaTime
-        );
-
-        if (glfwGetKey(openGL.window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-            glfwSetWindowShouldClose(openGL.window, true);
+        if (showMap) {
+            Map::render(&canvas, &world, &camera, true);
+            Map::render_camera(&canvas, &world, &camera, fov, false);
+            // Map::render_transformed_sight(&canvas, &world, &camera);
         }
 
+        mouse.update(&openGL);
+        camera.update(&openGL, &mouse, moveSpeed);
         openGL.update(&canvas);
     }
 

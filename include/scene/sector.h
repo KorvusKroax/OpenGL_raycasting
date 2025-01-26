@@ -1,7 +1,7 @@
 #pragma once
 
+#include <canvas/color.h>
 #include "wall.h"
-#include "canvas/color.h"
 
 struct Sector
 {

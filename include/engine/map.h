@@ -1,10 +1,9 @@
 #pragma once
 
 #include <canvas/canvas.h>
-#include "world.h"
-#include "viewpoint.h"
-#include "misc.h"
-
+#include <scene/world.h>
+#include <misc.h>
+#include "camera.h"
 
 namespace Map
 {
@@ -19,17 +18,17 @@ namespace Map
 
 
 
-    void render(Canvas* canvas, World* world, Viewpoint* viewpoint, bool transformed = false)
+    void render(Canvas* canvas, World* world, Camera* camera, bool transformed = false)
     {
         for (Wall wall : world->walls) {
             Point start = (*wall.start)
-                .sub(viewpoint->pos)
-                .rotate(transformed ? viewpoint->heading : 0)
+                .sub(camera->pos)
+                .rotate(transformed ? camera->heading : 0)
                 .mult(zoom)
                 .add(canvas->width >> 1, canvas->height >> 1);
             Point end = (*wall.end)
-                .sub(viewpoint->pos)
-                .rotate(transformed ? viewpoint->heading : 0)
+                .sub(camera->pos)
+                .rotate(transformed ? camera->heading : 0)
                 .mult(zoom)
                 .add(canvas->width >> 1, canvas->height >> 1);
 
@@ -49,10 +48,10 @@ namespace Map
         }
     }
 
-    void render_viewpoint(Canvas* canvas, World* world, Viewpoint* viewpoint, float fov, bool transformed = true)
+    void render_camera(Canvas* canvas, World* world, Camera* camera, float fov, bool transformed = true)
     {
         float dir_length = 10.0f;
-        float dir_rad = transformed ? viewpoint->heading : 0;
+        float dir_rad = transformed ? camera->heading : 0;
         float dir_x = sin(dir_rad) * dir_length * zoom;
         float dir_y = cos(dir_rad) * dir_length * zoom;
 
@@ -66,30 +65,30 @@ namespace Map
         Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + fov_left_x, (canvas->height >> 1) + fov_left_y, Color(255, 127, 0, 127));
         Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + fov_right_x, (canvas->height >> 1) + fov_right_y, Color(255, 127, 0, 127));
 
-        // viewpoint (screen center)
+        // camera (screen center)
         Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + dir_x, (canvas->height >> 1) + dir_y, Color(255, 127, 0));
         Circle::draw_filled(canvas, (canvas->width >> 1), (canvas->height >> 1), 2 * zoom, Color(255, 127, 0));
     }
 
 
 
-    void render_transformed_sight(Canvas* canvas, World* world, Viewpoint* viewpoint)
+    void render_transformed_sight(Canvas* canvas, World* world, Camera* camera)
     {
         for (Wall wall : world->walls) {
             Point start = (*wall.start)
-                .sub(viewpoint->pos)
-                .rotate(viewpoint->heading);
+                .sub(camera->pos)
+                .rotate(camera->heading);
             Point end = (*wall.end)
-                .sub(viewpoint->pos)
-                .rotate(viewpoint->heading);
+                .sub(camera->pos)
+                .rotate(camera->heading);
 
             if (start.y <= 0 && end.y <= 0) continue;
 
             // clip behind
-            if (start.y <= 0) {
+            if (start.y < 0) {
                 start.x = end.x - end.y * ((end.x - start.x) / (end.y - start.y));
                 start.y = 0;
-            } else if (end.y <= 0) {
+            } else if (end.y < 0) {
                 end.x = start.x - start.y * ((end.x - start.x) / (end.y - start.y));
                 end.y = 0;
             }

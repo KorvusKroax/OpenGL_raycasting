@@ -1,8 +1,8 @@
 #pragma once
 
+#include <canvas/color.h>
 #include "point.h"
 #include "texture.h"
-#include "canvas/color.h"
 
 struct Wall
 {
