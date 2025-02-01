@@ -15,12 +15,8 @@ class Mouse
 
         double xPos, yPos, xPos_last, yPos_last, xDelta, yDelta;
 
-        // static double xScroll, yScroll;
-        // static void scroll_callback(GLFWwindow* window, double xoff, double yoff)
-        // {
-        //     yScroll += yoff;
-        //     std::cout << "yScroll: " << yScroll << std::endl;
-        // }
+        bool scrolled;
+        double xScroll, yScroll;
 
         Mouse(OpenGL* openGL, double mouseSensivity = 1, MouseMode mouseMode = MOUSE_ENABLED)
         {
@@ -36,11 +32,25 @@ class Mouse
                     glfwSetInputMode(openGL->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     break;
             }
+
             glfwGetCursorPos(openGL->window, &xPos, &yPos);
             xPos_last = xPos;
             yPos_last = yPos;
 
-            // glfwSetScrollCallback(openGL->window, scroll_callback);
+            glfwSetWindowUserPointer(openGL->window, this);
+            glfwSetScrollCallback(openGL->window,
+                [](GLFWwindow* window, double xOffset, double yOffset) {
+                    Mouse* mouse = (Mouse*)glfwGetWindowUserPointer(window);
+
+                    mouse->scrolled = true;
+                    mouse->xScroll += xOffset;
+                    mouse->yScroll += yOffset;
+                }
+            );
+
+            scrolled = false;
+            xScroll = 0;
+            yScroll = 0;
         }
 
         void update(OpenGL* openGL)
@@ -50,5 +60,12 @@ class Mouse
             yDelta = yPos - yPos_last;
             xPos_last = xPos;
             yPos_last = yPos;
+
+            if (scrolled) {
+                scrolled = false;
+            } else {
+                xScroll = 0;
+                yScroll = 0;
+            }
         }
 };

@@ -89,10 +89,13 @@ namespace Misc
         return true;
     }
 
-    bool rayIntersection(float line_x1, float line_y1, float line_x2, float line_y2, float ray_dir_x, float ray_dir_y, float* ix, float* iy) // ray starts from (0, 0)
+    bool rayIntersection(float line_x1, float line_y1, float line_x2, float line_y2, float ray_dir_angle, float* ix, float* iy) // ray starts from (0, 0)
     {
         float line_dx = line_x2 - line_x1;
         float line_dy = line_y2 - line_y1;
+
+        float ray_dir_x = sin(ray_dir_angle);
+        float ray_dir_y = cos(ray_dir_angle);
 
         float den = line_dx * ray_dir_y - line_dy * ray_dir_x;
         if (den == 0) return false;

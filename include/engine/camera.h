@@ -6,12 +6,13 @@
 
 struct Camera
 {
-    Point pos;
+    float x, y;
     float height, heading, pitch;
 
-    Camera(Point pos, float height, float heading, float pitch)
+    Camera(float x, float y, float height, float heading, float pitch)
     {
-        this->pos = pos;
+        this->x = x;
+        this->y = y;
         this->height = height;
         this->heading = heading;
         this->pitch = pitch;
@@ -20,16 +21,20 @@ struct Camera
     void update(OpenGL* openGL, Mouse* mouse, float moveSpeed)
     {
         if (glfwGetKey(openGL->window, GLFW_KEY_W) == GLFW_PRESS) {
-            this->pos = this->pos.add(Point(sin(this->heading), cos(this->heading)).mult(moveSpeed * openGL->deltaTime));
+            this->x += sin(this->heading) * moveSpeed * openGL->deltaTime;
+            this->y += cos(this->heading) * moveSpeed * openGL->deltaTime;
         }
         if (glfwGetKey(openGL->window, GLFW_KEY_S) == GLFW_PRESS) {
-            this->pos = this->pos.sub(Point(sin(this->heading), cos(this->heading)).mult(moveSpeed * openGL->deltaTime));
+            this->x -= sin(this->heading) * moveSpeed * openGL->deltaTime;
+            this->y -= cos(this->heading) * moveSpeed * openGL->deltaTime;
         }
         if (glfwGetKey(openGL->window, GLFW_KEY_A) == GLFW_PRESS) {
-            this->pos = this->pos.sub(Point(cos(this->heading), -sin(this->heading)).mult(moveSpeed * openGL->deltaTime));
+            this->x -= cos(this->heading) * moveSpeed * openGL->deltaTime;
+            this->y += sin(this->heading) * moveSpeed * openGL->deltaTime;
         }
         if (glfwGetKey(openGL->window, GLFW_KEY_D) == GLFW_PRESS) {
-            this->pos = this->pos.add(Point(cos(this->heading), -sin(this->heading)).mult(moveSpeed * openGL->deltaTime));
+            this->x += cos(this->heading) * moveSpeed * openGL->deltaTime;
+            this->y -= sin(this->heading) * moveSpeed * openGL->deltaTime;
         }
         if (glfwGetKey(openGL->window, GLFW_KEY_Q) == GLFW_PRESS) {
             this->height -= moveSpeed * openGL->deltaTime;

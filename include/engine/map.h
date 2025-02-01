@@ -9,42 +9,61 @@ namespace Map
 {
     const float zoomStepping = 0.1f;
     float zoom = 1;
+    bool map_is_active = false;
 
-    void zoom_callback(GLFWwindow* window, double xOffset, double yOffset)
+    void changeZoom(double yScroll)
     {
-        zoom += yOffset * zoomStepping;
+        if (!map_is_active) return;
+
+        zoom += yScroll * zoomStepping;
         if (zoom < zoomStepping) zoom = zoomStepping;
     }
 
-
+    void rotate(float x, float y, float angle, float* rotated_x, float* rotated_y)
+    {
+        *rotated_x = (x * cos(angle)) + (y * -sin(angle));
+        *rotated_y = (x * sin(angle)) + (y * cos(angle));
+    }
 
     void render(Canvas* canvas, World* world, Camera* camera, bool transformed = false)
     {
         for (Wall wall : world->walls) {
-            Point start = (*wall.start)
-                .sub(camera->pos)
-                .rotate(transformed ? camera->heading : 0)
-                .mult(zoom)
-                .add(canvas->width >> 1, canvas->height >> 1);
-            Point end = (*wall.end)
-                .sub(camera->pos)
-                .rotate(transformed ? camera->heading : 0)
-                .mult(zoom)
-                .add(canvas->width >> 1, canvas->height >> 1);
+            float start_x, start_y;
+            rotate(
+                (*wall.start).x - camera->x,
+                (*wall.start).y - camera->y,
+                camera->heading,
+                &start_x, &start_y
+            );
+            start_x *= zoom;
+            start_y *= zoom;
+            start_x += canvas->width >> 1;
+            start_y += canvas->height >> 1;
 
-            Line::draw(canvas, start.x, start.y, end.x, end.y, Color(0, 255, 255));
+            float end_x, end_y;
+            rotate(
+                (*wall.end).x - camera->x,
+                (*wall.end).y - camera->y,
+                camera->heading,
+                &end_x, &end_y
+            );
+            end_x *= zoom;
+            end_y *= zoom;
+            end_x += canvas->width >> 1;
+            end_y += canvas->height >> 1;
+
+            Line::draw(canvas, start_x, start_y, end_x, end_y, Color(0, 255, 255));
 
             // wall's normal
-            float dx = end.x - start.x;
-            float dy = end.y - start.y;
+            float dx = end_x - start_x;
+            float dy = end_y - start_y;
             float wall_length = sqrt(dx * dx + dy * dy);
-            Point center = start.add(end).mult(.5f);
-            Point normal = Point(
-                center.x + (dy / wall_length) * 5 * zoom,
-                center.y + (dx / wall_length) * -5 * zoom
-            );
+            float center_x = (start_x + end_x) * .5f;
+            float center_y = (start_y + end_y) * .5f;
+            float normal_dir_x = (dy / wall_length) * 5 * zoom;
+            float normal_dir_y = (dx / wall_length) * -5 * zoom;
 
-            Line::draw(canvas, center.x, center.y, normal.x, normal.y, Color(0, 255, 255));
+            Line::draw(canvas, center_x, center_y, center_x + normal_dir_x, center_y + normal_dir_y, Color(0, 255, 255));
         }
     }
 
@@ -68,39 +87,5 @@ namespace Map
         // camera (screen center)
         Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + dir_x, (canvas->height >> 1) + dir_y, Color(255, 127, 0));
         Circle::draw_filled(canvas, (canvas->width >> 1), (canvas->height >> 1), 2 * zoom, Color(255, 127, 0));
-    }
-
-
-
-    void render_transformed_sight(Canvas* canvas, World* world, Camera* camera)
-    {
-        for (Wall wall : world->walls) {
-            Point start = (*wall.start)
-                .sub(camera->pos)
-                .rotate(camera->heading);
-            Point end = (*wall.end)
-                .sub(camera->pos)
-                .rotate(camera->heading);
-
-            if (start.y <= 0 && end.y <= 0) continue;
-
-            // clip behind
-            if (start.y < 0) {
-                start.x = end.x - end.y * ((end.x - start.x) / (end.y - start.y));
-                start.y = 0;
-            } else if (end.y < 0) {
-                end.x = start.x - start.y * ((end.x - start.x) / (end.y - start.y));
-                end.y = 0;
-            }
-
-            start = start
-                .mult(zoom)
-                .add(canvas->width >> 1, canvas->height >> 1);
-            end = end
-                .mult(zoom)
-                .add(canvas->width >> 1, canvas->height >> 1);
-
-            Line::draw(canvas, start.x, start.y, end.x, end.y, Color(255, 255, 255));
-        }
     }
 }

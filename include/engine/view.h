@@ -9,12 +9,25 @@ namespace View
 {
     namespace Raycast
     {
-        void render_wall_slice(Canvas* canvas, int col, Wall* wall, Camera* camera, float sector_height, float wall_slice_bottom, float wall_slice_top, Point rayIntersection)
+        void rotate(float x, float y, float angle, float* rotated_x, float* rotated_y)
         {
-            Point t_start = (*(*wall).start).sub(camera->pos).rotate(camera->heading);
-            float t_dx = rayIntersection.x - t_start.x;
-            float t_dy = rayIntersection.y - t_start.y;
-            float texture_slice_x = fmod(sqrt(t_dx * t_dx + t_dy * t_dy), (*(*wall).texture).width);
+            *rotated_x = (x * cos(angle)) + (y * -sin(angle));
+            *rotated_y = (x * sin(angle)) + (y * cos(angle));
+        }
+
+        void render_wall_slice(Canvas* canvas, int col, Wall* wall, Camera* camera, float sector_height, float wall_slice_bottom, float wall_slice_top, float ray_intersection_x, float ray_intersection_y)
+        {
+            float texture_pos_x, texture_pos_y;
+            rotate(
+                (*(*wall).start).x - camera->x,
+                (*(*wall).start).y - camera->y,
+                camera->heading,
+                &texture_pos_x, &texture_pos_y
+            );
+
+            float texture_dx = ray_intersection_x - texture_pos_x;
+            float texture_dy = ray_intersection_y - texture_pos_y;
+            float texture_slice_x = fmod(sqrt(texture_dx * texture_dx + texture_dy * texture_dy), (*(*wall).texture).width);
 
             float texture_step_y =  sector_height / (wall_slice_top - wall_slice_bottom);
             // float f = (int)wall_slice_bottom * texture_step_y;
@@ -36,12 +49,12 @@ namespace View
         {
             for (int row = portal_slice_bottom; row < wall_slice_bottom - 1; row++) {
 
-                float t_dist = camera->height / (row - horizont_line) * near_clip / cos(ray_dir_angle);
+                float texture_dist = camera->height / (row - horizont_line) * near_clip / cos(ray_dir_angle);
 
-                float t_pos_x = Misc::nmod(camera->pos.x - t_dist * sin(camera->heading + ray_dir_angle), (*(*sector).floor_texture).width);
-                float t_pos_y = Misc::nmod(camera->pos.y - t_dist * cos(camera->heading + ray_dir_angle), (*(*sector).floor_texture).height);
+                float texture_pos_x = Misc::nmod(camera->x - texture_dist * sin(camera->heading + ray_dir_angle), (*(*sector).floor_texture).width);
+                float texture_pos_y = Misc::nmod(camera->y - texture_dist * cos(camera->heading + ray_dir_angle), (*(*sector).floor_texture).height);
 
-                int color_index = (int)t_pos_x + (int)t_pos_y * (*(*sector).floor_texture).width;
+                int color_index = (int)texture_pos_x + (int)texture_pos_y * (*(*sector).floor_texture).width;
                 canvas->setPixel(col, row, (*(*sector).floor_texture).pixels[color_index]);
             }
         }
@@ -50,12 +63,12 @@ namespace View
         {
             for (int row = wall_slice_top + 1; row < portal_slice_top; row++) {
 
-                float t_dist = (((*sector).top - (*sector).bottom) - camera->height) / (horizont_line - row) * near_clip / cos(ray_dir_angle);
+                float texture_dist = (((*sector).top - (*sector).bottom) - camera->height) / (horizont_line - row) * near_clip / cos(ray_dir_angle);
 
-                float t_pos_x = Misc::nmod(camera->pos.x - t_dist * sin(camera->heading + ray_dir_angle), (*(*sector).ceiling_texture).width);
-                float t_pos_y = Misc::nmod(camera->pos.y - t_dist * cos(camera->heading + ray_dir_angle), (*(*sector).ceiling_texture).height);
+                float texture_pos_x = Misc::nmod(camera->x - texture_dist * sin(camera->heading + ray_dir_angle), (*(*sector).ceiling_texture).width);
+                float texture_pos_y = Misc::nmod(camera->y - texture_dist * cos(camera->heading + ray_dir_angle), (*(*sector).ceiling_texture).height);
 
-                int color_index = (int)t_pos_x + (int)t_pos_y * (*(*sector).ceiling_texture).width;
+                int color_index = (int)texture_pos_x + (int)texture_pos_y * (*(*sector).ceiling_texture).width;
                 canvas->setPixel(col, row, (*(*sector).ceiling_texture).pixels[color_index]);
             }
         }
@@ -74,13 +87,26 @@ namespace View
             float ix, iy, iDist = std::numeric_limits<float>::max();
 
             for (int i = 0; i < (*sector).wall_count; i++) {
-                Point start = (*(*(*sector).walls[i]).start).sub(camera->pos).rotate(camera->heading);
-                Point end = (*(*(*sector).walls[i]).end).sub(camera->pos).rotate(camera->heading);
+                float start_x, start_y;
+                rotate(
+                    (*(*(*sector).walls[i]).start).x - camera->x,
+                    (*(*(*sector).walls[i]).start).y - camera->y,
+                    camera->heading,
+                    &start_x, &start_y
+                );
 
-                if (backface_culling(start.x, start.y, end.x, end.y)) continue;
+                float end_x, end_y;
+                rotate(
+                    (*(*(*sector).walls[i]).end).x - camera->x,
+                    (*(*(*sector).walls[i]).end).y - camera->y,
+                    camera->heading,
+                    &end_x, &end_y
+                );
+
+                if (backface_culling(start_x, start_y, end_x, end_y)) continue;
 
                 float x, y, d;
-                if (Misc::rayIntersection(start.x, start.y, end.x, end.y, sin(ray_dir_angle), cos(ray_dir_angle),  &x, &y)) {
+                if (Misc::rayIntersection(start_x, start_y, end_x, end_y, ray_dir_angle, &x, &y)) {
                     d = x * x + y * y;
                     if (d < iDist) {
                         wall_index = i;
@@ -101,12 +127,12 @@ namespace View
                 if ((*(*sector).walls[wall_index]).portal_to != -1) {
                     render_column(canvas, col, world, &world->sectors[(*(*sector).walls[wall_index]).portal_to], camera, ray_dir_angle, near_clip, wall_slice_bottom, wall_slice_top);
                 } else {
-                    render_wall_slice(canvas, col, (*sector).walls[wall_index], camera, (*sector).top - (*sector).bottom, wall_slice_bottom, wall_slice_top, Point(ix, iy));
+                    render_wall_slice(canvas, col, (*sector).walls[wall_index], camera, (*sector).top - (*sector).bottom, wall_slice_bottom, wall_slice_top, ix, iy);
                 }
 
-                // render_floor(canvas, col, sector, camera, ray_dir_angle, near_clip, horizont_line, portal_slice_bottom, wall_slice_bottom);
+                render_floor(canvas, col, sector, camera, ray_dir_angle, near_clip, horizont_line, portal_slice_bottom, wall_slice_bottom);
 
-                // render_ceiling(canvas, col, sector, camera, ray_dir_angle, near_clip, horizont_line, portal_slice_top, wall_slice_top);
+                render_ceiling(canvas, col, sector, camera, ray_dir_angle, near_clip, horizont_line, portal_slice_top, wall_slice_top);
             }
         }
 
@@ -117,7 +143,7 @@ namespace View
             // get current sector
             int curr_sector = -1;
             for (int i = 0; i < world->sector_count; i++) {
-                if (world->sectors[i].pointInSector(camera->pos.x, camera->pos.y)) {
+                if (world->sectors[i].pointInSector(camera->x, camera->y)) {
                     curr_sector = i;
                     break;
                 }
