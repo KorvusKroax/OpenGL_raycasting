@@ -32,8 +32,10 @@ namespace View
         // float multiplier = 255.0f;
         // float intensity = .25f/ray_intersection_distance * multiplier;
 
-        for (int row = wall_slice_clipped_bottom; row < wall_slice_clipped_top; row++) {
-            int color_index = (int)texture_slice_x + (int)texture_slice_y * (*(*wall).texture).width;
+        for (int row = 0; row <= (int)wall_slice_clipped_top - (int)wall_slice_clipped_bottom; row++) {
+
+            int ty = fmod(texture_slice_y + texture_step_y * row, (*(*wall).texture).height);
+            int color_index = (int)texture_slice_x + ty * (*(*wall).texture).width;
 
             Color color = (*(*wall).texture).pixels[color_index];
             // float r = color.getRed() * intensity;
@@ -41,9 +43,7 @@ namespace View
             // float b = color.getBlue() * intensity;
             // color = Color(r < 255 ? r : 255, g < 255 ? g : 255, b < 255 ? b : 255);
 
-            canvas->setPixel(col, row, color);
-
-            texture_slice_y = fmod(texture_slice_y + texture_step_y, (*(*wall).texture).height);
+            canvas->setPixel(col, wall_slice_clipped_bottom + row, color);
         }
     }
 
