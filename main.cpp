@@ -36,8 +36,8 @@ int main()
     );
 
     while (!glfwWindowShouldClose(openGL.window)) {
-        canvas.clearCanvas();
-        // canvas.fillCanvas(Color(255, 0, 255));
+        // canvas.clearCanvas();
+        canvas.fillCanvas(Color(255, 0, 255));
 
         View::render(&canvas, &world, &camera, fov);
 

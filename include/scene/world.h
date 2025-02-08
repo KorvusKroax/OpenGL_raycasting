@@ -62,6 +62,6 @@ struct World
     Sector sectors[sector_count] = {
         Sector(5, new Wall*[5] {&walls[0], &walls[1], &walls[2], &walls[3], &walls[4]},             0, 128, Color(63, 63, 63), Color(127, 127, 255), &textures[3], &textures[5]),
         Sector(6, new Wall*[6] {&walls[5], &walls[6], &walls[7], &walls[8], &walls[9], &walls[10]}, 0, 128, Color(31, 31, 31), Color(63, 63, 255)  , &textures[4], &textures[6]),
-        Sector(4, new Wall*[4] {&walls[11], &walls[12], &walls[13], &walls[14]},                    0, 128, Color(10, 10, 10), Color(32, 32, 255)  , &textures[7], &textures[7]),
+        Sector(4, new Wall*[4] {&walls[11], &walls[12], &walls[13], &walls[14]},                    20, 98, Color(10, 10, 10), Color(32, 32, 255)  , &textures[3], &textures[7]),
     };
 };
