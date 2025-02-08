@@ -13,7 +13,7 @@ namespace View
         *rotated_y = (x * sin(angle)) + (y * cos(angle));
     }
 
-    void render_wall_slice(Canvas* canvas, int col, Wall* wall, Camera* camera, float sector_height, float wall_slice_bottom, float wall_slice_top, float portal_bottom, float portal_top, float ray_intersection_x, float ray_intersection_y)//, float ray_intersection_distance)
+    void render_wall_slice(Canvas* canvas, int col, Wall* wall, Camera* camera, float wall_height, float wall_slice_bottom, float wall_slice_top, float portal_bottom, float portal_top, float ray_intersection_x, float ray_intersection_y)//, float ray_intersection_distance)
     {
         float wall_slice_clipped_bottom = wall_slice_bottom > portal_bottom ? wall_slice_bottom : portal_bottom;
         float wall_slice_clipped_top = wall_slice_top < portal_top ? wall_slice_top : portal_top;
@@ -25,7 +25,7 @@ namespace View
         float texture_dy = ray_intersection_y - texture_pos_y;
         float texture_slice_x = fmod(sqrt(texture_dx * texture_dx + texture_dy * texture_dy), (*(*wall).texture).width);
 
-        float texture_step_y =  sector_height / (wall_slice_top - wall_slice_bottom);
+        float texture_step_y =  wall_height / (wall_slice_top - wall_slice_bottom);
 
         float texture_slice_y = wall_slice_bottom < wall_slice_clipped_bottom ? (portal_bottom - wall_slice_bottom) * texture_step_y : 0;
 
@@ -43,10 +43,7 @@ namespace View
 
             canvas->setPixel(col, row, color);
 
-            texture_slice_y += texture_step_y;
-            if (texture_slice_y >= (*(*wall).texture).height) {
-                texture_slice_y -= (*(*wall).texture).height;
-            }
+            texture_slice_y = fmod(texture_slice_y + texture_step_y, (*(*wall).texture).height);
         }
     }
 
@@ -148,14 +145,18 @@ namespace View
             } else {
 
                 float portal_bottom = wall_slice_bottom;
-                if ((*sector).bottom < world->sectors[(*(*sector).walls[wall_index]).portal_to].bottom) {
+                float bottom_wall_height = world->sectors[(*(*sector).walls[wall_index]).portal_to].bottom - (*sector).bottom;
+                if (bottom_wall_height > 0) {
                     portal_bottom = horizont_line - (camera->height - world->sectors[(*(*sector).walls[wall_index]).portal_to].bottom) / slice_distance * near_clip;
+                    render_wall_slice(canvas, col, (*sector).walls[wall_index], camera, bottom_wall_height, wall_slice_bottom, portal_bottom, portal_slice_bottom, portal_slice_top, ray_intersection_x, ray_intersection_y);//, ray_intersection_distance);
                 }
                 portal_bottom = portal_bottom > portal_slice_bottom ? portal_bottom : portal_slice_bottom;
 
                 float portal_top = wall_slice_top;
-                if ((*sector).top > world->sectors[(*(*sector).walls[wall_index]).portal_to].top) {
+                float top_wall_height = (*sector).top - world->sectors[(*(*sector).walls[wall_index]).portal_to].top;
+                if (top_wall_height > 0) {
                     portal_top = horizont_line + (world->sectors[(*(*sector).walls[wall_index]).portal_to].top - camera->height) / slice_distance * near_clip;
+                    render_wall_slice(canvas, col, (*sector).walls[wall_index], camera, top_wall_height, portal_top, wall_slice_top, portal_slice_bottom, portal_slice_top, ray_intersection_x, ray_intersection_y);//, ray_intersection_distance);
                 }
                 portal_top = portal_top < portal_slice_top ? portal_top : portal_slice_top;
 

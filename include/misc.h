@@ -8,7 +8,11 @@ namespace Misc
 
     inline double deg2rad(double angle) { return angle / 180.0 * PI; }
 
-    inline double nmod(double value, double mod) { return std::fmod(std::fmod(value, mod) + mod, mod); }
+    inline double nmod(double value, double mod)
+    {
+        return std::fmod(std::fmod(value, mod) + mod, mod);
+        // value can goes under 0
+    }
 
     inline float cross(float x1, float y1, float x2, float y2, float px, float py)
     {
