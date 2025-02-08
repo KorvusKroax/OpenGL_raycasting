@@ -3,9 +3,9 @@
 #include <open_gl.h>
 
 enum MouseMode {
-    MOUSE_ENABLED,
-    MOUSE_DISABLED,
-    MOUSE_HIDDEN
+    MOUSE_CURSOR_ENABLED,
+    MOUSE_CURSOR_DISABLED,
+    MOUSE_CURSOR_HIDDEN
 };
 
 class Mouse
@@ -18,16 +18,16 @@ class Mouse
         bool scrolled;
         double xScroll, yScroll;
 
-        Mouse(OpenGL* openGL, double mouseSensivity = 1, MouseMode mouseMode = MOUSE_ENABLED)
+        Mouse(OpenGL* openGL, double mouseSensivity = 1, MouseMode mouseMode = MOUSE_CURSOR_ENABLED)
         {
             this->mouseSensivity = mouseSensivity;
 
             switch (mouseMode) {
-                case MOUSE_HIDDEN:
+                case MOUSE_CURSOR_HIDDEN:
                     glfwSetInputMode(openGL->window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
                     glfwSetInputMode(openGL->window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
                     break;
-                case MOUSE_DISABLED:
+                case MOUSE_CURSOR_DISABLED:
                     glfwSetInputMode(openGL->window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
                     glfwSetInputMode(openGL->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
                     break;

@@ -15,11 +15,11 @@ OpenGL openGL = OpenGL(&canvas, PIXEL_SIZE, WINDOWED);
 
 World world;
 
-Mouse mouse = Mouse(&openGL, 1, MOUSE_DISABLED);
+Mouse mouse = Mouse(&openGL, .5f, MOUSE_CURSOR_DISABLED);
 
 Camera camera = Camera(0, 0, 50, 0, 0);
 float fov = Misc::deg2rad(80);
-float moveSpeed = 100;
+float moveSpeed = 50;
 
 int main()
 {
@@ -35,11 +35,11 @@ int main()
         }
     );
 
-    while (!glfwWindowShouldClose(openGL.window))
-    {
+    while (!glfwWindowShouldClose(openGL.window)) {
         canvas.clearCanvas();
+        // canvas.fillCanvas(Color(255, 0, 255));
 
-        View::Raycast::render(&canvas, &world, &camera, fov);
+        View::render(&canvas, &world, &camera, fov);
 
         if (Map::map_is_active) {
             Map::changeZoom(mouse.yScroll);
