@@ -1,8 +1,8 @@
 #pragma once
 
-#include <canvas/canvas.h>
-#include <canvas/color.h>
-#include <canvas/line.h>
+#include <canvas.h>
+#include <color.h>
+#include <line.h>
 
 #include <algorithm> // std::min, std::max in draw_filled()
 

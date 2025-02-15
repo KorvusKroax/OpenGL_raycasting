@@ -1,7 +1,7 @@
 #pragma once
 
-#include <canvas/canvas.h>
-#include <canvas/color.h>
+#include <canvas.h>
+#include <color.h>
 
 namespace Circle
 {
