@@ -6,8 +6,11 @@
 
 struct Camera
 {
-    float x, y;
-    float height, heading, pitch;
+    float x, y, height;
+    float heading, pitch;
+
+    float max_pitch = 100;
+    float pitch_speed = 200;
 
     Camera(float x, float y, float height, float heading, float pitch)
     {
@@ -45,8 +48,8 @@ struct Camera
 
         this->heading += mouse->xDelta * mouse->mouseSensivity * openGL->deltaTime;
 
-        this->pitch += mouse->yDelta * mouse->mouseSensivity * openGL->deltaTime * 200;
-        if (this->pitch < -200) this->pitch = -200;
-        if (this->pitch > 200) this->pitch = 200;
+        this->pitch += mouse->yDelta * mouse->mouseSensivity * openGL->deltaTime * pitch_speed;
+        if (this->pitch < -max_pitch) this->pitch = -max_pitch;
+        if (this->pitch > max_pitch) this->pitch = max_pitch;
     }
 };
