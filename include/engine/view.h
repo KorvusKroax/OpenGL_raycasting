@@ -7,6 +7,33 @@
 
 namespace View
 {
+    bool pointInSector(float x, float y, Sector* sector)
+    {
+        double minX = sector->walls[0]->start->x;
+        double maxX = sector->walls[0]->start->x;
+        double minY = sector->walls[0]->start->y;
+        double maxY = sector->walls[0]->start->y;
+        for (int i = 1 ; i < sector->wall_count; i++) {
+            if (minX > sector->walls[i]->start->x) minX = sector->walls[i]->start->x;
+            if (maxX < sector->walls[i]->start->x) maxX = sector->walls[i]->start->x;
+            if (minY > sector->walls[i]->start->y) minY = sector->walls[i]->start->y;
+            if (maxY < sector->walls[i]->start->y) maxY = sector->walls[i]->start->y;
+        }
+        if (x < minX || x > maxX || y < minY || y > maxY) return false;
+
+        // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
+        bool result = false;
+        for (int i = 0, j = sector->wall_count - 1; i < sector->wall_count; j = i++) {
+            if ( ((sector->walls[i]->start->y > y) != (sector->walls[j]->start->y > y)) &&
+                 (x < (sector->walls[j]->start->x - sector->walls[i]->start->x) * (y - sector->walls[i]->start->y) / (sector->walls[j]->start->y - sector->walls[i]->start->y) + sector->walls[i]->start->x)
+            ) {
+                result = !result;
+            }
+        }
+
+        return result;
+    }
+
     void rotate(float x, float y, float angle, float* rotated_x, float* rotated_y)
     {
         *rotated_x = (x * cos(angle)) + (y * -sin(angle));
@@ -108,15 +135,17 @@ namespace View
     {
         if (portal_slice_bottom > canvas->height - 1 || portal_slice_top < 0) return;
 
-        int wall_index = -1;
         float ray_intersection_x, ray_intersection_y, sqr_ray_intersection_distance = std::numeric_limits<float>::max();
 
-        for (int i = 0; i < (*sector).wall_count; i++) {
+        Wall* current_wall = nullptr;
+        for (int i = 0; i < sector->wall_count; i++) {
+            Wall* wall = sector->walls[i];
+
             float start_x, start_y;
-            rotate(sector->walls[i]->start->x - camera->x, sector->walls[i]->start->y - camera->y, camera->heading, &start_x, &start_y);
+            rotate(wall->start->x - camera->x, wall->start->y - camera->y, camera->heading, &start_x, &start_y);
 
             float end_x, end_y;
-            rotate(sector->walls[i]->end->x - camera->x, sector->walls[i]->end->y - camera->y, camera->heading, &end_x, &end_y);
+            rotate(wall->end->x - camera->x, wall->end->y - camera->y, camera->heading, &end_x, &end_y);
 
             if (backface_culling(start_x, start_y, end_x, end_y)) continue;
 
@@ -124,7 +153,7 @@ namespace View
             if (Misc::rayIntersection(start_x, start_y, end_x, end_y, ray_dir_angle, &x, &y)) {
                 d = x * x + y * y;
                 if (d < sqr_ray_intersection_distance) {
-                    wall_index = i;
+                    current_wall = wall;
                     ray_intersection_x = x;
                     ray_intersection_y = y;
                     sqr_ray_intersection_distance = d;
@@ -132,7 +161,7 @@ namespace View
             }
         }
 
-        if (wall_index != -1) {
+        if (current_wall != nullptr) {
             float horizont_line = (canvas->height >> 1) + camera->pitch;
 
             float ray_intersection_distance = sqrt(sqr_ray_intersection_distance);
@@ -141,26 +170,26 @@ namespace View
             float wall_slice_bottom = horizont_line - (camera->height - sector->bottom) / slice_distance * near_clip;
             float wall_slice_top = horizont_line + (sector->top - camera->height) / slice_distance * near_clip;
 
-            if (sector->walls[wall_index]->portal_to == -1) {
-                render_wall_slice(canvas, col, sector->walls[wall_index], camera, sector->top - sector->bottom, wall_slice_bottom, wall_slice_top, portal_slice_bottom, portal_slice_top, ray_intersection_x, ray_intersection_y);//, ray_intersection_distance);
+            if (current_wall->portal_to == -1) {
+                render_wall_slice(canvas, col, current_wall, camera, sector->top - sector->bottom, wall_slice_bottom, wall_slice_top, portal_slice_bottom, portal_slice_top, ray_intersection_x, ray_intersection_y);//, ray_intersection_distance);
             } else {
                 float portal_bottom = wall_slice_bottom;
-                float bottom_wall_height = world->sectors[sector->walls[wall_index]->portal_to].bottom - sector->bottom;
+                float bottom_wall_height = world->sectors[current_wall->portal_to].bottom - sector->bottom;
                 if (bottom_wall_height > 0) {
-                    portal_bottom = horizont_line - (camera->height - world->sectors[sector->walls[wall_index]->portal_to].bottom) / slice_distance * near_clip;
-                    render_wall_slice(canvas, col, sector->walls[wall_index], camera, bottom_wall_height, wall_slice_bottom, portal_bottom, portal_slice_bottom, portal_slice_top, ray_intersection_x, ray_intersection_y);//, ray_intersection_distance);
+                    portal_bottom = horizont_line - (camera->height - world->sectors[current_wall->portal_to].bottom) / slice_distance * near_clip;
+                    render_wall_slice(canvas, col, current_wall, camera, bottom_wall_height, wall_slice_bottom, portal_bottom, portal_slice_bottom, portal_slice_top, ray_intersection_x, ray_intersection_y);//, ray_intersection_distance);
                 }
                 portal_bottom = portal_bottom > portal_slice_bottom ? portal_bottom : portal_slice_bottom;
 
                 float portal_top = wall_slice_top;
-                float top_wall_height = sector->top - world->sectors[sector->walls[wall_index]->portal_to].top;
+                float top_wall_height = sector->top - world->sectors[current_wall->portal_to].top;
                 if (top_wall_height > 0) {
-                    portal_top = horizont_line + (world->sectors[sector->walls[wall_index]->portal_to].top - camera->height) / slice_distance * near_clip;
-                    render_wall_slice(canvas, col, sector->walls[wall_index], camera, top_wall_height, portal_top, wall_slice_top, portal_slice_bottom, portal_slice_top, ray_intersection_x, ray_intersection_y);//, ray_intersection_distance);
+                    portal_top = horizont_line + (world->sectors[current_wall->portal_to].top - camera->height) / slice_distance * near_clip;
+                    render_wall_slice(canvas, col, current_wall, camera, top_wall_height, portal_top, wall_slice_top, portal_slice_bottom, portal_slice_top, ray_intersection_x, ray_intersection_y);//, ray_intersection_distance);
                 }
                 portal_top = portal_top < portal_slice_top ? portal_top : portal_slice_top;
 
-                render_column(canvas, col, world, &world->sectors[sector->walls[wall_index]->portal_to], camera, ray_dir_angle, near_clip, portal_bottom, portal_top);
+                render_column(canvas, col, world, &world->sectors[current_wall->portal_to], camera, ray_dir_angle, near_clip, portal_bottom, portal_top);
             }
 
             render_floor(canvas, col, sector, camera, ray_dir_angle, near_clip, portal_slice_bottom, portal_slice_top, wall_slice_bottom);
@@ -173,21 +202,20 @@ namespace View
     {
         float near_clip = (canvas->width >> 1) / tan(fov * .5f);
 
-        // get current sector
-        int curr_sector = -1;
-        for (int i = 0; i < world->sector_count; i++) {
-            if (world->sectors[i].pointInSector(camera->x, camera->y)) {
-                curr_sector = i;
+        Sector* current_sector = nullptr;
+        for (Sector sector : world->sectors) {
+            if (pointInSector(camera->x, camera->y, &sector)) {
+                current_sector = &sector;
                 break;
             }
         }
 
-        if (curr_sector == -1) return;
+        if (current_sector == nullptr) return;
 
         float ray_dir_angle = -fov * .5f;
         float ray_dir_angle_step = fov / canvas->width;
         for (int col = 0; col < canvas->width; col++) {
-            render_column(canvas, col, world, &world->sectors[curr_sector], camera, ray_dir_angle, near_clip, 0, canvas->height);
+            render_column(canvas, col, world, current_sector, camera, ray_dir_angle, near_clip, 0, canvas->height);
             ray_dir_angle += ray_dir_angle_step;
         }
     }

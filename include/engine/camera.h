@@ -9,7 +9,7 @@ struct Camera
     float x, y, height;
     float heading, pitch;
 
-    float max_pitch = 100;
+    float max_pitch = 200;
     float pitch_speed = 200;
 
     Camera(float x, float y, float height, float heading, float pitch)
