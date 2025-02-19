@@ -1,23 +1,17 @@
 #pragma once
 
 #include <canvas.h>
-#include <line.h>
-#include <circle.h>
-
-#include "scene/wall.h"
 #include "scene/world.h"
 #include "camera.h"
 
 class Map
 {
     public:
-        bool active;
-        float zoom;
-        float zoomStepping;
+        bool active = false;
+        float zoom = 1;
+        float zoomStepping = 0.1f;
 
-        Map();
-
+        void render(Canvas* canvas, World* world, Camera* camera);
+        void render_viewpoint(Canvas* canvas, World* world, Camera* camera);
         void changeZoom(double yScroll);
-        void render(Canvas* canvas, World* world, Camera* camera, bool transformed = false);
-        void render_camera(Canvas* canvas, World* world, Camera* camera, float fov, bool transformed = true);
 };

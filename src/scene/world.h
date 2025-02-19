@@ -7,13 +7,12 @@
 
 struct World
 {
-    static const int point_count = 11;
-    Point points[point_count] = {
+    Point points[11] = {
         Point(-64, 100),
         Point(64, 100),
 
         Point(200, 50),
-        Point(0, -200),
+        Point(0, -600),
         Point(-200, -50),
 
         Point(200, 250),
@@ -25,8 +24,7 @@ struct World
         Point(64, 224),
     };
 
-    static const int texture_count = 8;
-    Texture textures[texture_count] = {
+    Texture textures[8] = {
         Texture("textures/161.png"),
         Texture("textures/211.png"),
         Texture("textures/212.png"),
@@ -37,8 +35,7 @@ struct World
         Texture("textures/547.png"),
     };
 
-    static const int wall_count = 15;
-    Wall walls[wall_count] = {
+    Wall walls[15] = {
         Wall(&points[0], &points[1], &textures[7], 2),
         Wall(&points[1], &points[2], &textures[1]),
         Wall(&points[2], &points[3], &textures[1]),
@@ -58,10 +55,9 @@ struct World
         Wall(&points[10], &points[1], &textures[7]),
     };
 
-    static const int sector_count = 3;
-    Sector sectors[sector_count] = {
+    Sector sectors[3] = {
         Sector(5, new Wall*[5] {&walls[0], &walls[1], &walls[2], &walls[3], &walls[4]},             -50, 228, &textures[3], &textures[5]),
-        Sector(6, new Wall*[6] {&walls[5], &walls[6], &walls[7], &walls[8], &walls[9], &walls[10]},   0, 128, &textures[3], &textures[6]),
+        Sector(6, new Wall*[6] {&walls[5], &walls[6], &walls[7], &walls[8], &walls[9], &walls[10]},   0, 128, &textures[3], &textures[5]),
         Sector(4, new Wall*[4] {&walls[11], &walls[12], &walls[13], &walls[14]},                     20,  98, &textures[4], &textures[4]),
     };
 };

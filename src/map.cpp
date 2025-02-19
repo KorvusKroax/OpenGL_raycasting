@@ -1,10 +1,40 @@
 #include "map.h"
 
-Map::Map()
+void Map::render(Canvas* canvas, World* world, Camera* camera)
 {
-    active = false;
-    zoom = 1;
-    zoomStepping = 0.1f;
+    for (Wall wall : world->walls) {
+        Point start = wall.start->subtract(camera->pos).rotate(camera->heading).multiply(zoom).add(Point(canvas->width >> 1, canvas->height >> 1));
+        Point end = wall.end->subtract(camera->pos).rotate(camera->heading).multiply(zoom).add(Point(canvas->width >> 1, canvas->height >> 1));
+
+        canvas->drawLine(start.x, start.y, end.x, end.y, Color(0, 255, 255));
+
+        // wall's normal
+        Point diff = end.subtract(start);
+        float wallLength = sqrt(diff.x * diff.x + diff.y * diff.y);
+
+        Point center = start.add(end).multiply(.5f);
+
+        float normalLength = 5;
+        Point normal = Point(diff.y, -diff.x).divide(wallLength).multiply(zoom * normalLength);
+
+        canvas->drawLine(center.x, center.y, center.x + normal.x, center.y + normal.y, Color(0, 255, 255));
+    }
+}
+
+void Map::render_viewpoint(Canvas* canvas, World* world, Camera* camera)
+{
+    float dirLength = 10;
+    canvas->drawLine((canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1), (canvas->height >> 1) + dirLength, Color(255, 127, 0));
+    canvas->drawCircle_filled((canvas->width >> 1), (canvas->height >> 1), 2 * zoom, Color(255, 127, 0));
+
+    // fov lines
+    float fovLength = 100;
+    float fov_angle = camera->fov * .5f;
+    Point fov_leftSide = Point(sin(-fov_angle), cos(-fov_angle)).multiply(zoom * fovLength);
+    Point fov_rightSide = Point(sin(fov_angle), cos(fov_angle)).multiply(zoom * fovLength);
+
+    canvas->drawLine((canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + fov_leftSide.x, (canvas->height >> 1) + fov_leftSide.y, Color(255, 127, 0, 127));
+    canvas->drawLine((canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + fov_rightSide.x, (canvas->height >> 1) + fov_rightSide.y, Color(255, 127, 0, 127));
 }
 
 void Map::changeZoom(double yScroll)
@@ -13,78 +43,4 @@ void Map::changeZoom(double yScroll)
 
     zoom += yScroll * zoomStepping;
     if (zoom < zoomStepping) zoom = zoomStepping;
-}
-
-void Map::render(Canvas* canvas, World* world, Camera* camera, bool transformed)
-{
-    for (Wall wall : world->walls) {
-        // float start_x, start_y;
-        // rotate(
-        //     (*wall.start).x - camera->pos.x,
-        //     (*wall.start).y - camera->pos.y,
-        //     camera->heading,
-        //     &start_x, &start_y
-        // );
-        // start_x *= zoom;
-        // start_y *= zoom;
-        // start_x += canvas->width >> 1;
-        // start_y += canvas->height >> 1;
-
-        Point start = wall.start->subtract(camera->pos).rotate(camera->heading).multiply(zoom).add(Point(canvas->width >> 1, canvas->height >> 1));
-        Point end = wall.end->subtract(camera->pos).rotate(camera->heading).multiply(zoom).add(Point(canvas->width >> 1, canvas->height >> 1));
-
-        // float end_x, end_y;
-        // rotate(
-        //     (*wall.end).x - camera->x,
-        //     (*wall.end).y - camera->y,
-        //     camera->heading,
-        //     &end_x, &end_y
-        // );
-        // end_x *= zoom;
-        // end_y *= zoom;
-        // end_x += canvas->width >> 1;
-        // end_y += canvas->height >> 1;
-
-        Line::draw(canvas, start.x, start.y, end.x, end.y, Color(0, 255, 255));
-
-        // wall's normal
-
-        // float dx = end_x - start_x;
-        // float dy = end_y - start_y;
-        Point diff = end.subtract(start);
-        float wall_length = sqrt(diff.x * diff.x + diff.y * diff.y);
-
-        Point center = start.add(end).multiply(.5f);
-
-        // float center_x = (start_x + end_x) * .5f;
-        // float center_y = (start_y + end_y) * .5f;
-        // float normal_dir_x = (dy / wall_length) * 5 * zoom;
-        // float normal_dir_y = (dx / wall_length) * -5 * zoom;
-
-        Point normal = diff.divide(wall_length).multiply(zoom, -zoom).multiply(5);
-
-        Line::draw(canvas, center.x, center.y, center.x + normal.x, center.y + normal.y, Color(0, 255, 255));
-    }
-}
-
-void Map::render_camera(Canvas* canvas, World* world, Camera* camera, float fov, bool transformed)
-{
-    float dir_length = 10.0f;
-    float dir_rad = transformed ? camera->heading : 0;
-    float dir_x = sin(dir_rad) * dir_length * zoom;
-    float dir_y = cos(dir_rad) * dir_length * zoom;
-
-    float fov_length = 100.0f;
-    float fov_left_x = sin(-fov * .5f + dir_rad) * fov_length * zoom;
-    float fov_left_y = cos(-fov * .5f + dir_rad) * fov_length * zoom;
-    float fov_right_x = sin(fov * .5f + dir_rad) * fov_length * zoom;
-    float fov_right_y = cos(fov * .5f + dir_rad) * fov_length * zoom;
-
-    // fov lines
-    Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + fov_left_x, (canvas->height >> 1) + fov_left_y, Color(255, 127, 0, 127));
-    Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + fov_right_x, (canvas->height >> 1) + fov_right_y, Color(255, 127, 0, 127));
-
-    // camera (screen center)
-    Line::draw(canvas, (canvas->width >> 1), (canvas->height >> 1), (canvas->width >> 1) + dir_x, (canvas->height >> 1) + dir_y, Color(255, 127, 0));
-    Circle::draw_filled(canvas, (canvas->width >> 1), (canvas->height >> 1), 2 * zoom, Color(255, 127, 0));
 }

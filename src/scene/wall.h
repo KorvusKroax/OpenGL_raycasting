@@ -9,17 +9,17 @@ struct Wall
     Point* start;
     Point* end;
     Texture* texture;
-    int portal_to; // index of a sector
+    int portalTo; // index of a sector
 
-    Wall(Point* start, Point* end, Texture* texture, int portal_to = -1)
+    Wall(Point* start, Point* end, Texture* texture, int portalTo = -1)
     {
         this->start = start;
         this->end = end;
         this->texture = texture;
-        this->portal_to = portal_to;
+        this->portalTo = portalTo;
     }
 
-    bool backface_culling(Point p)
+    bool backfaceCulling(Point p)
     {
         float x1 = start->x - p.x;
         float y1 = start->y - p.y;
