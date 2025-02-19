@@ -1,4 +1,5 @@
 #include <canvas.h>
+#include <cstring>
 
 Canvas::Canvas() { }
 

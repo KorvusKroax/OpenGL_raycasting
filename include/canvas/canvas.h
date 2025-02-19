@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstring>
-
 #include <color.h>
 
 struct Canvas
