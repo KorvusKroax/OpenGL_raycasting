@@ -15,7 +15,7 @@ struct World
         Point(0, -600),
         Point(-200, -50),
 
-        Point(200, 250),
+        Point(200, 300),
         Point(0, 600),
         Point(-200, 300),
         Point(-200, 427),

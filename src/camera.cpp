@@ -49,7 +49,7 @@ void Camera::render(Canvas* canvas, World* world)
 
     Sector* currentSector = nullptr;
     for (Sector sector : world->sectors) {
-        if (sector.pointInSector(pos)) {
+        if (sector.pointInSector(this->pos)) {
             currentSector = &sector;
             break;
         }
@@ -73,13 +73,13 @@ void Camera::render_column(Canvas* canvas, int col, World* world, Sector* sector
     Point intersection;
     float intersectionDistance_sqr = std::numeric_limits<float>::max();
 
-    for (int i = 0; i < sector->wall_count; i++) {
+    for (int i = 0; i < sector->wallCount; i++) {
         Wall* wall = sector->walls[i];
 
-        if (wall->backfaceCulling(pos)) continue;
+        if (wall->backfaceCulling(this->pos)) continue;
 
-        Point start = (*wall->start).subtract(pos).rotate(this->heading);
-        Point end = (*wall->end).subtract(pos).rotate(this->heading);
+        Point start = (*wall->start - this->pos).rotate(this->heading);
+        Point end = (*wall->end - this->pos).rotate(this->heading);
 
         Point ip;
         float id;
@@ -133,11 +133,11 @@ void Camera::render_column(Canvas* canvas, int col, World* world, Sector* sector
 
 void Camera::render_wallSlice(Canvas* canvas, int col, Wall* wall, float wall_height, float wallSlice_bottom, float wallSlice_top, float portal_bottom, float portal_top, Point* intersection)//, float intersectionDistance)
 {
-    float wallSlice_clipped_bottom = wallSlice_bottom > portal_bottom ? wallSlice_bottom : portal_bottom;
-    float wallSlice_clipped_top = wallSlice_top < portal_top ? wallSlice_top : portal_top;
+    int wallSlice_clipped_bottom = wallSlice_bottom > portal_bottom ? wallSlice_bottom : portal_bottom;
+    int wallSlice_clipped_top = wallSlice_top < portal_top ? wallSlice_top : portal_top;
 
-    Point t_pos = (*wall->start).subtract(pos).rotate(heading);
-    Point t_diff = (*intersection).subtract(t_pos);
+    Point t_pos = (*wall->start - pos).rotate(heading);
+    Point t_diff = (*intersection - t_pos);
 
     float t_step =  wall_height / (wallSlice_top - wallSlice_bottom);
     Point t_slice = Point(
@@ -145,20 +145,13 @@ void Camera::render_wallSlice(Canvas* canvas, int col, Wall* wall, float wall_he
         wallSlice_bottom < wallSlice_clipped_bottom ? (portal_bottom - wallSlice_bottom) * t_step : 0
     );
 
-    // float multiplier = 255.0f;
-    // float intensity = .25f/ray_intersectionDistance * multiplier;
+    for (int row = wallSlice_clipped_bottom; row <= wallSlice_clipped_top; row++) {
 
-    for (int row = 0; row <= (int)wallSlice_clipped_top - (int)wallSlice_clipped_bottom; row++) {
-
-        int index = (int)t_slice.x + (int)fmod(t_slice.y + t_step * row, wall->texture->height) * wall->texture->width;
+        int index = (int)t_slice.x + (int)fmod(t_slice.y + t_step * (row - wallSlice_clipped_bottom), wall->texture->height) * wall->texture->width;
 
         Color color = wall->texture->pixels[index];
-        // float r = color.getRed() * intensity;
-        // float g = color.getGreen() * intensity;
-        // float b = color.getBlue() * intensity;
-        // color = Color(r < 255 ? r : 255, g < 255 ? g : 255, b < 255 ? b : 255);
 
-        canvas->setPixel(col, wallSlice_clipped_bottom + row, color);
+        canvas->setPixel(col, row, color);
     }
 }
 
@@ -168,19 +161,19 @@ void Camera::render_floor(Canvas* canvas, int col, Sector* sector, float rayAngl
 
     if (wallSlice_bottom < 0) return;
 
-    float portalSlice_clipped_bottom = portalSlice_bottom > 0 ? portalSlice_bottom : 0;
-    float wallSlice_clipped_bottom = wallSlice_bottom < portalSlice_top ? wallSlice_bottom : portalSlice_top;
+    int portalSlice_clipped_bottom = portalSlice_bottom > 0 ? portalSlice_bottom : 0;
+    int wallSlice_clipped_bottom = wallSlice_bottom < portalSlice_top ? wallSlice_bottom : portalSlice_top;
 
     float horizontLine = (canvas->height >> 1) + pitch;
 
-    for (int row = portalSlice_clipped_bottom; row < wallSlice_clipped_bottom; row++) {
+    for (int row = portalSlice_clipped_bottom; row <= wallSlice_clipped_bottom; row++) {
+        float t_dist = (height - sector->bottom) / (row - horizontLine) * nearClip / cos(rayAngle);
+        Point t_pos = Point(
+            nmod(pos.x - t_dist * sin(heading + rayAngle), sector->floorTexture->width),
+            nmod(pos.y - t_dist * cos(heading + rayAngle), sector->floorTexture->height)
+        );
 
-        float texture_distance = (height - sector->bottom) / (row - horizontLine) * nearClip / cos(rayAngle);
-
-        float texture_pos_x = nmod(pos.x - texture_distance * sin(heading + rayAngle), sector->floorTexture->width);
-        float texture_pos_y = nmod(pos.y - texture_distance * cos(heading + rayAngle), sector->floorTexture->height);
-
-        int color_index = (int)texture_pos_x + (int)texture_pos_y * sector->floorTexture->width;
+        int color_index = (int)t_pos.x + (int)t_pos.y * sector->floorTexture->width;
         Color color = sector->floorTexture->pixels[color_index];
         canvas->setPixel(col, row, color);
     }
@@ -192,31 +185,27 @@ void Camera::render_ceiling(Canvas* canvas, int col, Sector* sector, float rayAn
 
     if (wallSlice_top > canvas->height) return;
 
-    float portalSlice_clipped_top = portalSlice_top < canvas->height ? portalSlice_top : canvas->height;
-    float wallSlice_clipped_top = wallSlice_top > portalSlice_bottom ? wallSlice_top : portalSlice_bottom;
+    int portalSlice_clipped_top = portalSlice_top < canvas->height ? portalSlice_top : canvas->height;
+    int wallSlice_clipped_top = wallSlice_top > portalSlice_bottom ? wallSlice_top : portalSlice_bottom;
 
     float horizontLine = (canvas->height >> 1) + pitch;
 
-    for (int row = wallSlice_clipped_top; row < portalSlice_clipped_top; row++) {
+    for (int row = wallSlice_clipped_top; row <= portalSlice_clipped_top; row++) {
+        float t_dist = ((sector->top - sector->bottom) - (height - sector->bottom)) / (horizontLine - row) * nearClip / cos(rayAngle);
+        Point t_pos = Point(
+            nmod(pos.x - t_dist * sin(heading + rayAngle), sector->ceilingTexture->width),
+            nmod(pos.y - t_dist * cos(heading + rayAngle), sector->ceilingTexture->height)
+        );
 
-        float texture_distance = ((sector->top - sector->bottom) - (height - sector->bottom)) / (horizontLine - row) * nearClip / cos(rayAngle);
-
-        float texture_pos_x = nmod(pos.x - texture_distance * sin(heading + rayAngle), sector->ceilingTexture->width);
-        float texture_pos_y = nmod(pos.y - texture_distance * cos(heading + rayAngle), sector->ceilingTexture->height);
-
-        int color_index = (int)texture_pos_x + (int)texture_pos_y * sector->ceilingTexture->width;
+        int color_index = (int)t_pos.x + (int)t_pos.y * sector->ceilingTexture->width;
         Color color = sector->ceilingTexture->pixels[color_index];
         canvas->setPixel(col, row, color);
     }
 }
 
-
-
-
-
 bool Camera::rayIntersection(Point* start, Point* end, float rayAngle, Point* intersection)
 {
-    Point diff = (*end).subtract(*start);
+    Point diff = *end - *start;
     Point rayDir = Point(sin(rayAngle), cos(rayAngle));
 
     float den = diff.x * rayDir.y - diff.y * rayDir.x;
@@ -228,13 +217,12 @@ bool Camera::rayIntersection(Point* start, Point* end, float rayAngle, Point* in
     float u = (diff.x * start->y - diff.y * start->x) / den;
     if (0 > u) return false;
 
-    *intersection = diff.multiply(t).add(*start);
+    *intersection = diff * t + *start;
 
     return true;
 }
 
-// value can goes under 0
-inline double Camera::nmod(double value, double mod)
+inline double Camera::nmod(double value, double mod) // value can goes under 0
 {
     return std::fmod(std::fmod(value, mod) + mod, mod);
 }
