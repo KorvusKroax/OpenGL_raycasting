@@ -105,14 +105,15 @@ void Camera::render_column(Canvas* canvas, int col, World* world, Sector* sector
         float wallSlice_top = horizontLine + (sector->top - height) / wallSlice_distance * nearClip;
 
         if (currentWall->portalTo == -1) {
-            render_wallSlice(canvas, col, world, currentWall, sector->top - sector->bottom, wallSlice_bottom, wallSlice_top, portalSlice_bottom, portalSlice_top, &intersection);//, intersectionDistance);
+            render_wallSlice(canvas, col, world, currentWall, sector->top - sector->bottom, wallSlice_bottom, wallSlice_top, portalSlice_bottom, portalSlice_top, &intersection);
         } else {
             Sector* otherSector = &world->sectors[currentWall->portalTo];
+
             float portal_bottom = wallSlice_bottom;
             float bottomWall_height = otherSector->bottom - sector->bottom;
             if (bottomWall_height > 0) {
                 portal_bottom = horizontLine - (height - otherSector->bottom) / wallSlice_distance * nearClip;
-                render_wallSlice(canvas, col, world, currentWall, bottomWall_height, wallSlice_bottom, portal_bottom, portalSlice_bottom, portalSlice_top, &intersection);//, intersectionDistance);
+                render_wallSlice(canvas, col, world, currentWall, bottomWall_height, wallSlice_bottom, portal_bottom, portalSlice_bottom, portalSlice_top, &intersection);
             }
             portal_bottom = portal_bottom > portalSlice_bottom ? portal_bottom : portalSlice_bottom;
 
@@ -120,7 +121,7 @@ void Camera::render_column(Canvas* canvas, int col, World* world, Sector* sector
             float topWall_height = sector->top - otherSector->top;
             if (topWall_height > 0) {
                 portal_top = horizontLine + (otherSector->top - height) / wallSlice_distance * nearClip;
-                render_wallSlice(canvas, col, world, currentWall, topWall_height, portal_top, wallSlice_top, portalSlice_bottom, portalSlice_top, &intersection);//, intersectionDistance);
+                render_wallSlice(canvas, col, world, currentWall, topWall_height, portal_top, wallSlice_top, portalSlice_bottom, portalSlice_top, &intersection);
             }
             portal_top = portal_top < portalSlice_top ? portal_top : portalSlice_top;
 
@@ -133,10 +134,10 @@ void Camera::render_column(Canvas* canvas, int col, World* world, Sector* sector
     }
 }
 
-void Camera::render_wallSlice(Canvas* canvas, int col, World* world, Wall* wall, float wall_height, float wallSlice_bottom, float wallSlice_top, float portal_bottom, float portal_top, Point* intersection)//, float intersectionDistance)
+void Camera::render_wallSlice(Canvas* canvas, int col, World* world, Wall* wall, float wall_height, float wallSlice_bottom, float wallSlice_top, float portalSlice_bottom, float portalSlice_top, Point* intersection)
 {
-    int wallSlice_clipped_bottom = wallSlice_bottom > portal_bottom ? wallSlice_bottom : portal_bottom;
-    int wallSlice_clipped_top = wallSlice_top < portal_top ? wallSlice_top : portal_top;
+    int wallSlice_clipped_bottom = wallSlice_bottom > portalSlice_bottom ? wallSlice_bottom : portalSlice_bottom;
+    int wallSlice_clipped_top = wallSlice_top < portalSlice_top ? wallSlice_top : portalSlice_top;
 
     Point t_pos = (world->points[wall->start] - pos).rotate(heading);
     Point t_diff = (*intersection - t_pos);
@@ -144,7 +145,7 @@ void Camera::render_wallSlice(Canvas* canvas, int col, World* world, Wall* wall,
     float t_step =  wall_height / (wallSlice_top - wallSlice_bottom);
     Point t_slice = Point(
         fmod(sqrt(t_diff.x * t_diff.x + t_diff.y * t_diff.y), world->textures[wall->texture].width),
-        wallSlice_bottom < wallSlice_clipped_bottom ? (portal_bottom - wallSlice_bottom) * t_step : 0
+        wallSlice_bottom < wallSlice_clipped_bottom ? (portalSlice_bottom - wallSlice_bottom) * t_step : 0
     );
 
     for (int row = wallSlice_clipped_bottom; row <= wallSlice_clipped_top; row++) {
