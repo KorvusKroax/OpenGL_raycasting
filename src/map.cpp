@@ -3,8 +3,8 @@
 void Map::render(Canvas* canvas, World* world, Camera* camera)
 {
     for (Wall wall : world->walls) {
-        Point start = (*wall.start - camera->pos).rotate(camera->heading) * zoom + Point(canvas->width >> 1, canvas->height >> 1);
-        Point end = (*wall.end - camera->pos).rotate(camera->heading) * zoom + Point(canvas->width >> 1, canvas->height >> 1);
+        Point start = (world->points[wall.start] - camera->pos).rotate(camera->heading) * zoom + Point(canvas->width >> 1, canvas->height >> 1);
+        Point end = (world->points[wall.end] - camera->pos).rotate(camera->heading) * zoom + Point(canvas->width >> 1, canvas->height >> 1);
 
         canvas->drawLine(start.x, start.y, end.x, end.y, Color(0, 255, 255));
 

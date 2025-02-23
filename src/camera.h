@@ -29,10 +29,12 @@ class Camera
 
     private:
         void render_column(Canvas* canvas, int col, World* world, Sector* sector, float rayAngle, float nearClip, float portalSlice_bottom, float portalSlice_top);
-        void render_wallSlice(Canvas* canvas, int col, Wall* wall, float wall_height, float wallSlice_bottom, float wallSlice_top, float portal_bottom, float portal_top, Point* intersection);
-        void render_floor(Canvas* canvas, int col, Sector* sector, float rayAngle, float nearClip, float portalSlice_bottom, float portalSlice_top, float wallSlice_bottom);
-        void render_ceiling(Canvas* canvas, int col, Sector* sector, float rayAngle, float nearClip, float portalSlice_bottom, float portalSlice_top, float wallSlice_top);
+        void render_wallSlice(Canvas* canvas, int col, World* world, Wall* wall, float wall_height, float wallSlice_bottom, float wallSlice_top, float portal_bottom, float portal_top, Point* intersection);
+        void render_floor(Canvas* canvas, int col, World* world, Sector* sector, float rayAngle, float nearClip, float portalSlice_bottom, float portalSlice_top, float wallSlice_bottom);
+        void render_ceiling(Canvas* canvas, int col, World* world, Sector* sector, float rayAngle, float nearClip, float portalSlice_bottom, float portalSlice_top, float wallSlice_top);
 
+        bool pointInSector(World* world, Sector* sector);
+        bool backfaceCulling(Point* start, Point* end);
         bool rayIntersection(Point* start, Point* end, float rayAngle, Point* intersection);
         double nmod(double value, double mod);
 };

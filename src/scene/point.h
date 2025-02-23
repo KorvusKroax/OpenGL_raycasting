@@ -1,7 +1,5 @@
 #pragma once
 
-#include <math.h>
-
 struct Point
 {
     float x, y;
