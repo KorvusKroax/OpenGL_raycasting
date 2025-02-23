@@ -73,7 +73,7 @@ void Camera::render_column(Canvas* canvas, int col, World* world, Sector* sector
 
     Wall* currentWall = nullptr;
     Point intersection;
-    float intersectionDistance_sqr = std::numeric_limits<float>::max();
+    float intersectionDistance_sqr = -1;
 
     for (int i = 0; i < sector->wallCount; i++) {
         Wall* wall = &world->walls[sector->walls[i]];
@@ -87,7 +87,7 @@ void Camera::render_column(Canvas* canvas, int col, World* world, Sector* sector
         float id;
         if (rayIntersection(&start, &end, rayAngle, &ip)) {
             id = ip.x * ip.x + ip.y * ip.y;
-            if (id < intersectionDistance_sqr) {
+            if (intersectionDistance_sqr == -1 || id < intersectionDistance_sqr) {
                 currentWall = wall;
                 intersection = ip;
                 intersectionDistance_sqr = id;

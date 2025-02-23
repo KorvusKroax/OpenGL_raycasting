@@ -14,7 +14,6 @@ struct World
         Texture("textures/117.png"),
         Texture("textures/373.png"),
         Texture("textures/091.png"),
-        Texture("textures/122.png"),
         Texture("textures/547.png"),
     };
 
@@ -36,23 +35,23 @@ struct World
     };
 
     Wall walls[15] = {
-        Wall(0, 1, 7, 2),
+        Wall(0, 1, 6, 2),
         Wall(1, 2, 1),
         Wall(2, 3, 1),
         Wall(3, 4, 1),
         Wall(4, 0, 1),
 
-        Wall(10, 9, 7, 2),
+        Wall(10, 9, 6, 2),
         Wall(9, 7, 2),
         Wall(7, 8, 0),
         Wall(8, 6, 2),
         Wall(6, 5, 2),
         Wall(5, 10, 2),
 
-        Wall(1, 0, 7, 0),
-        Wall(0, 9, 7),
-        Wall(9, 10, 7, 1),
-        Wall(10, 1, 7),
+        Wall(1, 0, 6, 0),
+        Wall(0, 9, 6),
+        Wall(9, 10, 6, 1),
+        Wall(10, 1, 6),
     };
 
     Sector sectors[3] = {
