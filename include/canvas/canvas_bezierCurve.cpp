@@ -23,7 +23,7 @@ void Canvas::drawBezierCurve_quadratic(int x1, int y1, int xc, int yc, int x2, i
     drawLine(x, y, x2, y2, color);
 }
 
-void Canvas::drawBezierCurve_cubic(Canvas* canvas, int x1, int y1, int x1c, int y1c, int x2c, int y2c, int x2, int y2, float resolution, Color color)
+void Canvas::drawBezierCurve_cubic(int x1, int y1, int x1c, int y1c, int x2c, int y2c, int x2, int y2, float resolution, Color color)
 {
     float xA, yA, xB, yB, xC, yC;
     float xAB, yAB, xBC, yBC;

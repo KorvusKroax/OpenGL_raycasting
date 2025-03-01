@@ -24,11 +24,12 @@ Map map;
 float fov = 80;
 Camera camera = Camera(Point(0, 0), 50, 0, 0, fov / 180.0 * PI);
 
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mod) {
+void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
+{
     if (key == GLFW_KEY_TAB && action == GLFW_PRESS) {
         map.active = !map.active;
     }
-    if (key == GLFW_KEY_ESCAPE) { // && action == GLFW_PRESS) {
+    if (key == GLFW_KEY_ESCAPE) {
         glfwSetWindowShouldClose(openGL.window, true);
     }
 }

@@ -20,23 +20,24 @@ class Camera
         float fov;
 
         float moveSpeed = 100;
-        float maxPitch = 100;
-        float pitchSpeed = 200;
+        float turnSpeed = 1;
+        float pitchSpeed = turnSpeed * 150;
+        float maxPitch = 150;
 
         Camera(Point pos, float height, float heading, float pitch, float fov);
         ~Camera();
 
-        void update(OpenGL* openGL, Mouse* mouse);
-        void render(Canvas* canvas, World* world);
+        void update(OpenGL *openGL, Mouse *mouse);
+        void render(Canvas *canvas, World *world);
 
     private:
-        void render_column(Canvas* canvas, int col, World* world, Sector* sector, float rayAngle, float nearClip, float portalSlice_bottom, float portalSlice_top);
-        void render_wallSlice(Canvas* canvas, int col, World* world, Wall* wall, float wall_height, float wallSlice_bottom, float wallSlice_top, float portal_bottom, float portal_top, Point* intersection);
-        void render_floor(Canvas* canvas, int col, World* world, Sector* sector, float rayAngle, float nearClip, float portalSlice_bottom, float portalSlice_top, float wallSlice_bottom);
-        void render_ceiling(Canvas* canvas, int col, World* world, Sector* sector, float rayAngle, float nearClip, float portalSlice_bottom, float portalSlice_top, float wallSlice_top);
+        void render_column(Canvas *canvas, int col, World *world, Sector *sector, float rayAngle, float nearClip, int portalSlice_bottom, int portalSlice_top);
+        void render_wallSlice(Canvas *canvas, int col, World *world, Wall *wall, float wall_height, float wallSlice_bottom, float wallSlice_top, int portalSlice_bottom, int portalSlice_top, Point intersection);
+        void render_floor(Canvas *canvas, int col, World *world, Sector *sector, float rayAngle, float nearClip, int portalSlice_bottom, int portalSlice_top, float wallSlice_bottom);
+        void render_ceiling(Canvas *canvas, int col, World *world, Sector *sector, float rayAngle, float nearClip, int portalSlice_bottom, int portalSlice_top, float wallSlice_top);
 
-        bool pointInSector(World* world, Sector* sector);
-        bool backfaceCulling(Point* start, Point* end);
-        bool rayIntersection(Point* start, Point* end, float rayAngle, Point* intersection);
+        bool pointInSector(World *world, Sector *sector);
+        bool backfaceCulling(Point *start, Point *end);
+        bool rayIntersection(Point *start, Point *end, float rayAngle, Point *intersection);
         double nmod(double value, double mod);
 };

@@ -6,11 +6,11 @@
 struct Texture
 {
     int width, height, channelCount;
-    int* pixels;
+    int *pixels;
 
     Texture() { }
 
-    Texture(const char* fileName)
+    Texture(const char *fileName)
     {
         stbi_set_flip_vertically_on_load(true);
         unsigned char *image = stbi_load(fileName, &width, &height, &channelCount, 0);

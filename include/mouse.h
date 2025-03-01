@@ -18,7 +18,7 @@ class Mouse
         bool scrolled;
         double xScroll, yScroll;
 
-        Mouse(OpenGL* openGL, double mouseSensivity = 1, MouseMode mouseMode = MOUSE_CURSOR_ENABLED)
+        Mouse(OpenGL *openGL, double mouseSensivity = 1, MouseMode mouseMode = MOUSE_CURSOR_ENABLED)
         {
             this->mouseSensivity = mouseSensivity;
 
@@ -39,8 +39,8 @@ class Mouse
 
             glfwSetWindowUserPointer(openGL->window, this);
             glfwSetScrollCallback(openGL->window,
-                [](GLFWwindow* window, double xOffset, double yOffset) {
-                    Mouse* mouse = (Mouse*)glfwGetWindowUserPointer(window);
+                [](GLFWwindow *window, double xOffset, double yOffset) {
+                    Mouse *mouse = (Mouse*)glfwGetWindowUserPointer(window);
 
                     mouse->scrolled = true;
                     mouse->xScroll += xOffset;
@@ -53,7 +53,7 @@ class Mouse
             yScroll = 0;
         }
 
-        void update(OpenGL* openGL)
+        void update(OpenGL *openGL)
         {
             glfwGetCursorPos(openGL->window, &xPos, &yPos);
             xDelta = xPos - xPos_last;

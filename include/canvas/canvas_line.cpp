@@ -62,7 +62,7 @@ void Canvas::drawLine_AA(int x1, int y1, int x2, int y2, Color color)
     }
 }
 
-// bool clip_box(float* x1, float* y1, float* x2, float* y2, float border_top, float border_right, float border_bottom, float border_left)
+// bool clip_box(float *x1, float *y1, float *x2, float *y2, float border_top, float border_right, float border_bottom, float border_left)
 // {
 //     bool isClipped = false;
 

@@ -50,15 +50,16 @@ void Canvas::setPixel(int x, int y, Color color)
     pixels[x + y * width] = Color(r, g, b, a).value;
 }
 
-bool Canvas::getPixel(int x, int y, Color* color)
+bool Canvas::getPixel(int x, int y, Color *color)
 {
     if (x < 0 || x >= width || y < 0 || y >= height) return false;
 
     *color = Color(pixels[x + y * width]);
+
     return true;
 }
 
-void Canvas::setPixels(int x, int y, Canvas* canvas)
+void Canvas::setPixels(int x, int y, Canvas *canvas)
 {
     for (int i = 0; i < canvas->width; i++) {
         for (int j = 0; j < canvas->height; j++) {
@@ -67,12 +68,13 @@ void Canvas::setPixels(int x, int y, Canvas* canvas)
     }
 }
 
-bool Canvas::getPixels(int x, int y, unsigned int w, unsigned int h, Canvas* canvas)
+bool Canvas::getPixels(int x, int y, unsigned int w, unsigned int h, Canvas *canvas)
 {
     canvas = new Canvas(w, h);
 
     if ((x < 0 && x + canvas->width < 0) || (x >= width && x + canvas->width > width) ||
-        (y < 0 && y + canvas->height < 0) || (y >= height && x + canvas->height > height)) return false;
+        (y < 0 && y + canvas->height < 0) || (y >= height && x + canvas->height > height))
+            return false;
 
     Color color;
     for (int i = 0; i < w; i++) {
@@ -84,10 +86,3 @@ bool Canvas::getPixels(int x, int y, unsigned int w, unsigned int h, Canvas* can
 
     return true;
 }
-
-// #include <line.h>
-// #include <bezier_curve.h>
-// #include <triangle.h>
-// #include <rectangle.h>
-// #include <circle.h>
-// #include <fill.h>

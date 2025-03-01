@@ -17,13 +17,13 @@ enum ScreenMode {
 class OpenGL
 {
     public:
-        GLFWwindow* window;
+        GLFWwindow *window;
         float deltaTime;
 
-        OpenGL(Canvas* canvas, float pixelScale = 1.0f, ScreenMode screenMode = WINDOWED, const char* title = "OpenGL - 2D window");
+        OpenGL(Canvas *canvas, float pixelScale = 1.0f, ScreenMode screenMode = WINDOWED, const char* title = "OpenGL - 2D window");
         ~OpenGL();
 
-        void update(Canvas* canvas);
+        void update(Canvas *canvas);
 
     private:
         float vertices[24] =  {
@@ -43,9 +43,9 @@ class OpenGL
         GLuint texture_color_buffer;
         GLuint render_buffer;
 
-        Shader* shader;
+        Shader *shader;
 
         float currTime, lastTime;
 
-        void initQuad(Canvas* canvas);
+        void initQuad(Canvas *canvas);
 };

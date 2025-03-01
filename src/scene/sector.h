@@ -3,14 +3,14 @@
 struct Sector
 {
     int wallCount;
-    int* walls;
+    int *walls;
     float bottom, top;
     int floorTexture;
     int ceilingTexture;
 
     Sector() { }
 
-    Sector(int wallCount, int* walls, float bottom, float top, int floorTexture, int ceilingTexture)
+    Sector(int wallCount, int *walls, float bottom, float top, int floorTexture, int ceilingTexture)
     {
         this->wallCount = wallCount;
         this->walls = walls;

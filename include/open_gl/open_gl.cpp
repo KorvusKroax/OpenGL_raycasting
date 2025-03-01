@@ -1,6 +1,6 @@
 #include <open_gl.h>
 
-OpenGL::OpenGL(Canvas* canvas, float pixelScale, ScreenMode screenMode, const char* title)
+OpenGL::OpenGL(Canvas *canvas, float pixelScale, ScreenMode screenMode, const char *title)
 {
     if (!glfwInit()) {
         std::cout << "Failed to initialize GLFW" << std::endl;
@@ -11,8 +11,8 @@ OpenGL::OpenGL(Canvas* canvas, float pixelScale, ScreenMode screenMode, const ch
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     if (screenMode == FULLSCREEN) {
-        GLFWmonitor* primaryMonitor =  glfwGetPrimaryMonitor();
-        const GLFWvidmode* videoMode = glfwGetVideoMode(primaryMonitor);
+        GLFWmonitor *primaryMonitor =  glfwGetPrimaryMonitor();
+        const GLFWvidmode *videoMode = glfwGetVideoMode(primaryMonitor);
         window = glfwCreateWindow(videoMode->width, videoMode->height, title, primaryMonitor, NULL);
 
         (*canvas).init(
@@ -45,7 +45,10 @@ OpenGL::OpenGL(Canvas* canvas, float pixelScale, ScreenMode screenMode, const ch
 
     initQuad(canvas);
 
-    shader = new Shader("include/open_gl/shaders/canvas.vert", "include/open_gl/shaders/canvas.frag");
+    shader = new Shader(
+        "include/open_gl/shaders/canvas.vert",
+        "include/open_gl/shaders/canvas.frag"
+    );
 
     currTime = 0;
     deltaTime = 0;
@@ -64,7 +67,7 @@ OpenGL::~OpenGL()
     glfwTerminate();
 }
 
-void OpenGL::update(Canvas* canvas)
+void OpenGL::update(Canvas *canvas)
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glDisable(GL_DEPTH_TEST);
@@ -87,7 +90,7 @@ void OpenGL::update(Canvas* canvas)
     lastTime = currTime;
 }
 
-void OpenGL::initQuad(Canvas* canvas)
+void OpenGL::initQuad(Canvas *canvas)
 {
     glGenVertexArrays(1, &vertex_array);
     glBindVertexArray(vertex_array);
