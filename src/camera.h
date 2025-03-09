@@ -4,8 +4,6 @@
 #include <open_gl.h>
 #include <mouse.h>
 
-#include <math.h>
-
 #include "scene/point.h"
 #include "scene/wall.h"
 #include "scene/sector.h"

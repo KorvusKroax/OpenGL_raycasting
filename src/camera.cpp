@@ -1,4 +1,5 @@
 #include "camera.h"
+#include <cmath>
 
 Camera::Camera(Point pos, float height, float heading, float pitch, float fov)
 {
@@ -59,9 +60,9 @@ void Camera::update(OpenGL *openGL, Mouse *mouse)
 void Camera::render(Canvas *canvas, World *world)
 {
     Sector *currentSector = nullptr;
-    for (Sector sector : world->sectors) {
-        if (pointInSector(world, &sector)) {
-            currentSector = &sector;
+    for (int i = 0; i < world->sectorCount; i++) {
+        if (pointInSector(world, &world->sectors[i])) {
+            currentSector = &world->sectors[i];
             break;
         }
     }
@@ -221,17 +222,17 @@ void Camera::render_ceiling(Canvas *canvas, int col, World *world, Sector *secto
 
 bool Camera::pointInSector(World *world, Sector *sector)
 {
-    double minX = world->points[world->walls[sector->walls[0]].start].x;
-    double minY = world->points[world->walls[sector->walls[0]].start].y;
-    double maxX = world->points[world->walls[sector->walls[0]].start].x;
-    double maxY = world->points[world->walls[sector->walls[0]].start].y;
+    float xMin = world->points[world->walls[sector->walls[0]].start].x;
+    float yMin = world->points[world->walls[sector->walls[0]].start].y;
+    float xMax = xMin;
+    float yMax = yMin;
     for (int i = 1; i < sector->wallCount; i++) {
-        if (minX > world->points[world->walls[sector->walls[i]].start].x) minX = world->points[world->walls[sector->walls[i]].start].x;
-        if (minY > world->points[world->walls[sector->walls[i]].start].y) minY = world->points[world->walls[sector->walls[i]].start].y;
-        if (maxX < world->points[world->walls[sector->walls[i]].start].x) maxX = world->points[world->walls[sector->walls[i]].start].x;
-        if (maxY < world->points[world->walls[sector->walls[i]].start].y) maxY = world->points[world->walls[sector->walls[i]].start].y;
+        xMin = std::min(xMin, world->points[world->walls[sector->walls[i]].start].x);
+        xMax = std::max(xMax, world->points[world->walls[sector->walls[i]].start].x);
+        yMin = std::min(yMin, world->points[world->walls[sector->walls[i]].start].y);
+        yMax = std::max(yMax, world->points[world->walls[sector->walls[i]].start].y);
     }
-    if (this->pos.x < minX || this->pos.x > maxX || this->pos.y < minY || this->pos.y > maxY) return false;
+    if (this->pos.x < xMin || this->pos.x > xMax || this->pos.y < yMin || this->pos.y > yMax) return false;
 
     // https://wrf.ecse.rpi.edu/Research/Short_Notes/pnpoly.html
     bool result = false;
@@ -257,14 +258,6 @@ bool Camera::backfaceCulling(Point *start, Point *end)
 
     return (y2 - y1) * x1 - (x2 - x1) * y1 >= 0;
 }
-
-// inline float cross(float x1, float y1, float x2, float y2, float px, float py)
-// {
-//     return (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1);
-//     // result > 0: p is left
-//     // result = 0: p is on line
-//     // result < 0: p is right
-// }
 
 bool Camera::rayIntersection(Point *start, Point *end, float rayAngle, Point *intersection)
 {

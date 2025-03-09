@@ -1,3 +1,5 @@
+// https://permadi.com/1996/05/ray-casting-tutorial-table-of-contents/
+
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <canvas.h>
@@ -36,6 +38,10 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
 
 int main()
 {
+    // world.set();
+    // world.save("serialized.map");
+    world.load("serialized.map");
+
     glfwSetWindowPos(openGL.window, 100, 50);
     glfwSetKeyCallback(openGL.window, keyCallback);
 
