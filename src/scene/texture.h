@@ -2,6 +2,7 @@
 
 // #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+
 #include <iostream>
 
 struct Texture
@@ -20,9 +21,9 @@ struct Texture
         for (int i = 0; i < this->width; i++) {
             for (int j = 0; j < this->height; j++) {
                 this->pixels[i + j * this->width] =
-                    image[(i * this->channelCount + 0) + j * this->width * this->channelCount] |
-                    image[(i * this->channelCount + 1) + j * this->width * this->channelCount] << 8 |
-                    image[(i * this->channelCount + 2) + j * this->width * this->channelCount] << 16 |
+                    image[(i * this->channelCount + 0) + j * (this->width * this->channelCount)] |
+                    image[(i * this->channelCount + 1) + j * (this->width * this->channelCount)] << 8 |
+                    image[(i * this->channelCount + 2) + j * (this->width * this->channelCount)] << 16 |
                     255 << 24;
             }
         }

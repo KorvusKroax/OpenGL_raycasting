@@ -7,6 +7,10 @@ struct Canvas
     unsigned int width, height;
     int *pixels;
 
+    bool charsetLoaded;
+    unsigned int charCount, charWidth, charHeight;
+    int **charset;
+
     Canvas();
     ~Canvas();
     Canvas(unsigned int width, unsigned int height);
@@ -39,4 +43,9 @@ struct Canvas
 
     void floodFill(int x, int y, Color color);
     void spanFill(int x, int y, Color color);
+
+    void loadCharset(const char *fileName, int charWidth, int charHeight);
+    void drawChar(int x, int y, int asciiCode, Color color);
+    void drawText(int x, int y, const char *text, Color color);
+    void drawChar_();
 };

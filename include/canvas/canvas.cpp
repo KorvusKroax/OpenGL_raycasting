@@ -3,7 +3,16 @@
 
 Canvas::Canvas() { }
 
-Canvas::~Canvas() { delete[] pixels; }
+Canvas::~Canvas() {
+    delete[] this->pixels;
+
+    if (this->charsetLoaded) {
+        for (int i = 0; i < this->charCount; ++i) {
+            delete this->charset[i];
+        }
+        delete[] this->charset;
+    }
+}
 
 Canvas::Canvas(unsigned int width, unsigned int height)
 {
@@ -15,6 +24,8 @@ void Canvas::init(unsigned int width, unsigned int height)
     this->width = width;
     this->height = height;
     this->pixels = new int[this->width * this->height];
+
+    this->charsetLoaded = false;
 }
 
 void Canvas::clearCanvas()

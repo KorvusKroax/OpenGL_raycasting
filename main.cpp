@@ -38,6 +38,8 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
 
 int main()
 {
+    canvas.loadCharset("fonts/c64_font.png", 8, 8);
+
     // world.set();
     // world.save("serialized.map");
     world.load("serialized.map");
@@ -56,6 +58,8 @@ int main()
             map.render(&canvas, &world, &camera);
             map.render_viewpoint(&canvas, &world, &camera);
         }
+
+        canvas.drawText(0, 0, "Press TAB to toggle map.", WHITE);
 
         openGL.update(&canvas);
     }
