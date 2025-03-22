@@ -45,7 +45,7 @@ int main()
     glfwSetWindowPos(openGL.window, 100, 50);
     glfwSetKeyCallback(openGL.window, keyCallback);
 
-    canvas.loadCharset("fonts/c64_font.png", 32, 3, 8, 8);
+    Font *c64_font = canvas.loadFont("fonts/c64_font.png", 32, 3, 8, 8);
 
     while (!glfwWindowShouldClose(openGL.window)) {
         canvas.clearCanvas();
@@ -59,10 +59,10 @@ int main()
             map.render_viewpoint(&canvas, &world, &camera);
         }
 
-        canvas.drawText_loadedCharset(0, canvas.height - 1 - canvas.charHeight, "Press TAB to toggle map", YELLOW);
+        canvas.drawText(0, canvas.height - 1 - c64_font->height, "Press TAB to toggle map", EGA_YELLOW, c64_font);
 
-        canvas.drawText_loadedCharset(0, 10, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk 12345", WHITE);
-        canvas.drawText(0, 0, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz", WHITE);
+        canvas.drawText(0, 10, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk 12345", EGA_WHITE, c64_font);
+        canvas.drawText(0, 0, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz", EGA_WHITE);
 
         openGL.update(&canvas);
     }

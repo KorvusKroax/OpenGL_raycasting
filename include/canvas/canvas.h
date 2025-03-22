@@ -1,6 +1,7 @@
 #pragma once
 
 #include "color.h"
+#include "font.h"
 
 struct Canvas
 {
@@ -106,10 +107,6 @@ struct Canvas
         0x56e2    /*''*/
     };
 
-    bool charsetLoaded;
-    unsigned int charWidth, charHeight, charCount;
-    int **charset;
-
     Canvas();
     ~Canvas();
     Canvas(unsigned int width, unsigned int height);
@@ -118,7 +115,7 @@ struct Canvas
     void clearCanvas();
     void fillCanvas(Color color);
     void setPixel(int x, int y, Color color);
-    bool getPixel(int x, int y, Color *color = 0);
+    bool getPixel(int x, int y, Color *color);
     void setPixels(int x, int y, Canvas *canvas);
     bool getPixels(int x, int y, unsigned int w, unsigned int h, Canvas *canvas);
 
@@ -143,9 +140,9 @@ struct Canvas
     void floodFill(int x, int y, Color color);
     void spanFill(int x, int y, Color color);
 
+    Font* loadFont(const char *fileName, int fontSheetGridWidth, int fontSheetGridHeight, int charWidth, int charHeight);
     void drawChar(int x, int y, unsigned char asciiCode, Color color);
+    void drawChar(int x, int y, unsigned char asciiCode, Color color, Font *font);
     void drawText(int x, int y, const char *text, Color color);
-    void drawChar_loadedCharset(int x, int y, unsigned char asciiCode, Color color);
-    void drawText_loadedCharset(int x, int y, const char *text, Color color);
-    void loadCharset(const char *fileName, int fontSheetGridWidth, int fontSheetGridHeight, int charWidth, int charHeight);
+    void drawText(int x, int y, const char *text, Color color, Font *font);
 };
