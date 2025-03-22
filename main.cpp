@@ -45,7 +45,7 @@ int main()
     glfwSetWindowPos(openGL.window, 100, 50);
     glfwSetKeyCallback(openGL.window, keyCallback);
 
-    canvas.loadCharset("fonts/c64_font.png", 32, 4, 8, 8);
+    canvas.loadCharset("fonts/c64_font.png", 32, 3, 8, 8);
 
     while (!glfwWindowShouldClose(openGL.window)) {
         canvas.clearCanvas();

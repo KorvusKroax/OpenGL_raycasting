@@ -27,6 +27,8 @@ void Canvas::init(unsigned int width, unsigned int height)
     this->pixels = new int[this->width * this->height];
 
     this->charsetLoaded = false;
+    this->charWidth = 4;
+    this->charHeight = 6;
 }
 
 void Canvas::clearCanvas()
