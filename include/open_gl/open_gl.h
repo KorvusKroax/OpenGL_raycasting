@@ -2,10 +2,10 @@
 
 #include <iostream>
 
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <shader.h>
-#include <canvas.h>
+#include "glad/glad.h"
+#include "GLFW/glfw3.h"
+#include "shader.h"
+#include "canvas.h"
 
 enum ScreenMode {
     FULLSCREEN,

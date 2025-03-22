@@ -1,5 +1,6 @@
-#include <canvas.h>
-#include <cstring>
+#include <cstring> // memset
+
+#include "canvas.h"
 
 Canvas::Canvas() { }
 

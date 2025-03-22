@@ -1,5 +1,6 @@
-#include "camera.h"
 #include <cmath>
+
+#include "camera.h"
 
 Camera::Camera(Point pos, float height, float heading, float pitch, float fov)
 {

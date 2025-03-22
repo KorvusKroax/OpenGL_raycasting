@@ -1,4 +1,4 @@
-#include <open_gl.h>
+#include "open_gl.h"
 
 OpenGL::OpenGL(Canvas *canvas, float pixelScale, ScreenMode screenMode, const char *title)
 {

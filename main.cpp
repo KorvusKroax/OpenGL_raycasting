@@ -2,9 +2,9 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <canvas.h>
-#include <open_gl.h>
-#include <mouse.h>
+#include "canvas.h"
+#include "open_gl.h"
+#include "mouse.h"
 
 #include "src/scene/point.h"
 #include "src/scene/world.h"
@@ -38,14 +38,14 @@ void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
 
 int main()
 {
-    canvas.loadCharset("fonts/c64_font.png", 8, 8);
-
     // world.set();
     // world.save("serialized.map");
     world.load("serialized.map");
 
     glfwSetWindowPos(openGL.window, 100, 50);
     glfwSetKeyCallback(openGL.window, keyCallback);
+
+    canvas.loadCharset("fonts/c64_font.png", 32, 4, 8, 8);
 
     while (!glfwWindowShouldClose(openGL.window)) {
         canvas.clearCanvas();
@@ -59,7 +59,10 @@ int main()
             map.render_viewpoint(&canvas, &world, &camera);
         }
 
-        canvas.drawText(0, 0, "Press TAB to toggle map.", WHITE);
+        canvas.drawText_loadedCharset(0, canvas.height - 1 - canvas.charHeight, "Press TAB to toggle map", YELLOW);
+
+        canvas.drawText_loadedCharset(0, 10, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk 12345", WHITE);
+        canvas.drawText(0, 0, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz", WHITE);
 
         openGL.update(&canvas);
     }

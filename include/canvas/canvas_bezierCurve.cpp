@@ -1,4 +1,4 @@
-#include <canvas.h>
+#include "canvas.h"
 
 void Canvas::drawBezierCurve_quadratic(int x1, int y1, int xc, int yc, int x2, int y2, float resolution, Color color)
 {

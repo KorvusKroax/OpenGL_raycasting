@@ -1,9 +1,6 @@
 #pragma once
 
-#include <canvas.h>
-
-#include <math.h>
-
+#include "canvas.h"
 #include "scene/world.h"
 #include "camera.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <open_gl.h>
+#include "open_gl.h"
 
 enum MouseMode {
     MOUSE_CURSOR_ENABLED,

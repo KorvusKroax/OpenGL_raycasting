@@ -1,5 +1,6 @@
-#include <canvas.h>
-#include <math.h> // abs()
+#include <cmath> // abs()
+
+#include "canvas.h"
 
 void Canvas::drawLine(int x1, int y1, int x2, int y2, Color color)
 {

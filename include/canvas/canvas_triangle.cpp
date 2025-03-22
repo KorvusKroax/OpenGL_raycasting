@@ -1,5 +1,6 @@
-#include <canvas.h>
 #include <algorithm> // std::min, std::max
+
+#include "canvas.h"
 
 void Canvas::drawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, Color color)
 {

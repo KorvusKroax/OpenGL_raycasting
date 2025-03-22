@@ -1,9 +1,8 @@
 #pragma once
 
-#include <canvas.h>
-#include <open_gl.h>
-#include <mouse.h>
-
+#include "canvas.h"
+#include "open_gl.h"
+#include "mouse.h"
 #include "scene/point.h"
 #include "scene/wall.h"
 #include "scene/sector.h"
