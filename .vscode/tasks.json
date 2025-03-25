@@ -15,6 +15,7 @@
                 "-I./include/open_gl",
                 "-L./lib",
                 "./include/canvas/*.cpp",
+                "./include/canvas/lodepng/*.cpp",
                 "./include/open_gl/*.cpp",
                 "./include/open_gl/glad/glad.c",
                 "./src/*.cpp",

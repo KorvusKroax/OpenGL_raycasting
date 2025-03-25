@@ -1,7 +1,5 @@
 // https://permadi.com/1996/05/ray-casting-tutorial-table-of-contents/
 
-#define STB_IMAGE_IMPLEMENTATION
-
 #include "canvas.h"
 #include "open_gl.h"
 #include "mouse.h"
@@ -42,10 +40,10 @@ int main()
     // world.save("serialized.map");
     world.load("serialized.map");
 
+    Font c64_font("fonts/c64_font.png", 32, 3, 8, 8);
+
     glfwSetWindowPos(openGL.window, 100, 50);
     glfwSetKeyCallback(openGL.window, keyCallback);
-
-    Font *c64_font = canvas.loadFont("fonts/c64_font.png", 32, 3, 8, 8);
 
     while (!glfwWindowShouldClose(openGL.window)) {
         canvas.clearCanvas();
@@ -59,9 +57,9 @@ int main()
             map.render_viewpoint(&canvas, &world, &camera);
         }
 
-        canvas.drawText(0, canvas.height - 1 - c64_font->height, "Press TAB to toggle map", EGA_YELLOW, c64_font);
+        canvas.drawText(0, canvas.height - 1 - c64_font.height, "Press TAB to toggle map", EGA_YELLOW, EGA_RED, &c64_font);
 
-        canvas.drawText(0, 10, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk 12345", EGA_WHITE, c64_font);
+        canvas.drawText(0, 10, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk 12345", EGA_WHITE, &c64_font);
         canvas.drawText(0, 0, "Aa Bb Cc Dd Ee Ff Gg Hh Ii Jj Kk Ll Mm Nn Oo Pp Qq Rr Ss Tt Uu Vv Ww Xx Yy Zz", EGA_WHITE);
 
         openGL.update(&canvas);

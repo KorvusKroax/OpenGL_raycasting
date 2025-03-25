@@ -108,8 +108,9 @@ struct Canvas
     };
 
     Canvas();
-    ~Canvas();
     Canvas(unsigned int width, unsigned int height);
+    Canvas(const char *fileName);
+    ~Canvas();
 
     void init(unsigned int width, unsigned int height);
     void clearCanvas();
@@ -118,6 +119,7 @@ struct Canvas
     bool getPixel(int x, int y, Color *color);
     void setPixels(int x, int y, Canvas *canvas);
     bool getPixels(int x, int y, unsigned int w, unsigned int h, Canvas *canvas);
+    bool loadImage_PNG(const char *fileName);
 
     void drawLine(int x1, int y1, int x2, int y2, Color color);
     void drawLine_AA(int x1, int y1, int x2, int y2, Color color);
@@ -140,9 +142,12 @@ struct Canvas
     void floodFill(int x, int y, Color color);
     void spanFill(int x, int y, Color color);
 
-    Font* loadFont(const char *fileName, int fontSheetGridWidth, int fontSheetGridHeight, int charWidth, int charHeight);
     void drawChar(int x, int y, unsigned char asciiCode, Color color);
+    void drawChar(int x, int y, unsigned char asciiCode, Color color, Color background);
     void drawChar(int x, int y, unsigned char asciiCode, Color color, Font *font);
+    void drawChar(int x, int y, unsigned char asciiCode, Color color, Color background, Font *font);
     void drawText(int x, int y, const char *text, Color color);
+    void drawText(int x, int y, const char *text, Color color, Color background);
     void drawText(int x, int y, const char *text, Color color, Font *font);
+    void drawText(int x, int y, const char *text, Color color, Color background, Font *font);
 };

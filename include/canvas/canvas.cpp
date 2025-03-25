@@ -1,15 +1,22 @@
 #include <cstring> // memset
+#include <iostream> // cout
 
 #include "canvas.h"
+#include "lodepng/lodepng.h"
 
 Canvas::Canvas() { }
-
-Canvas::~Canvas() { delete[] this->pixels; }
 
 Canvas::Canvas(unsigned int width, unsigned int height)
 {
     init(width, height);
 }
+
+Canvas::Canvas(const char *fileName)
+{
+    loadImage_PNG(fileName);
+}
+
+Canvas::~Canvas() { delete[] this->pixels; }
 
 void Canvas::init(unsigned int width, unsigned int height)
 {
@@ -82,6 +89,30 @@ bool Canvas::getPixels(int x, int y, unsigned int w, unsigned int h, Canvas *can
         for (int j = 0; j < h; j++) {
             getPixel(x + i, y + j, &color);
             canvas->pixels[i + j * w] = color.value;
+        }
+    }
+
+    return true;
+}
+
+bool Canvas::loadImage_PNG(const char *fileName)
+{
+    unsigned imageWidth, imageHeight, channelCount = 4;
+    unsigned char *image;
+    unsigned error = lodepng_decode32_file(&image, &imageWidth, &imageHeight, fileName);
+    if (error) {
+        std::cout << "decoder error " << error << ": " << lodepng_error_text(error) << std::endl;
+        return false;
+    }
+
+    init(imageWidth, imageHeight);
+    for (int i = 0; i < this->width; i++) {
+        for (int j = 0; j < this->height; j++) {
+            this->pixels[i + j * this->width] =
+                image[(i * channelCount + 0) + (this->height - 1 - j) * (this->width * channelCount)] |
+                image[(i * channelCount + 1) + (this->height - 1 - j) * (this->width * channelCount)] << 8 |
+                image[(i * channelCount + 2) + (this->height - 1 - j) * (this->width * channelCount)] << 16 |
+                image[(i * channelCount + 3) + (this->height - 1 - j) * (this->width * channelCount)] << 24;
         }
     }
 
