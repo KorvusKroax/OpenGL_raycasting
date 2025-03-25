@@ -40,4 +40,10 @@ struct Color {
     void setGreen(unsigned int v) { this->value = this->value & 0xffff00ff | (v << 8); }
     void setBlue(unsigned int v) { this->value = this->value & 0xff00ffff | (v << 16); }
     void setAlpha(unsigned int v) { this->value = this->value & 0x00ffffff | (v << 24); }
+
+    int grayscale()
+    {
+        int v = getRed() * 0.299f + getGreen() * 0.587f + getBlue() * 0.114f;
+        return v | (v << 8) | (v << 16) | (getAlpha() << 24);
+    }
 };
